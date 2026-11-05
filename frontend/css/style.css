@@ -1,0 +1,211 @@
+/* ================= CSS RESET E VARIÁVEIS ================= */
+:root {
+    --bg-dark: #090a0f;
+    --cyan: #00f0ff;
+    --magenta: #d500f9;
+    --pink: #ff1744;
+    --text-main: #ffffff;
+    --text-muted: #a0a5b5;
+    --font-code: 'Fira Code', monospace;
+    --font-ui: 'Inter', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-dark);
+    font-family: var(--font-ui);
+    color: var(--text-main);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* ================= BACKGROUND GRID (O Fundo do Print) ================= */
+.grid-background {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: 
+        linear-gradient(rgba(213, 0, 249, 0.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(213, 0, 249, 0.2) 1px, transparent 1px);
+    background-size: 50px 50px;
+    transform: perspective(500px) rotateX(60deg) translateY(-100px) scale(3);
+    z-index: -1;
+    opacity: 0.6;
+}
+
+/* Fundo radial escuro para destacar o texto */
+body::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at center, transparent 0%, var(--bg-dark) 70%);
+    z-index: 0;
+}
+
+/* ================= TELA PRINCIPAL ================= */
+.hero-container {
+    text-align: center;
+    z-index: 1;
+    max-width: 800px;
+    padding: 20px;
+}
+
+.hero-title {
+    font-family: var(--font-code);
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.highlight-cyan {
+    color: var(--cyan);
+    text-shadow: 0 0 15px var(--cyan);
+}
+
+.hero-subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-bottom: 2.5rem;
+    line-height: 1.5;
+}
+
+/* Botão RUN */
+.btn-run {
+    background: linear-gradient(90deg, var(--magenta), var(--pink));
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: var(--font-ui);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 20px rgba(213, 0, 249, 0.4);
+}
+
+.btn-run:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(213, 0, 249, 0.7);
+}
+
+/* ================= MODAL (POP-UP) ================= */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    opacity: 1;
+    transition: opacity 0.15s ease;
+}
+
+.modal-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal-content {
+    background: #151821;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 2rem;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    transform: translateY(0);
+    transition: transform 0.15s ease;
+}
+
+.modal-overlay.hidden .modal-content {
+    transform: translateY(-20px);
+}
+
+.btn-close {
+    position: absolute;
+    top: 15px; right: 15px;
+    background: none; border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.btn-close:hover { color: white; }
+
+/* Abas (Login/Cadastro) */
+.modal-tabs {
+    display: flex;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tab-btn {
+    flex: 1;
+    background: none; border: none;
+    color: var(--text-muted);
+    padding: 10px;
+    font-size: 1rem; font-weight: 600;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.tab-btn.active {
+    color: var(--cyan);
+    border-bottom: 2px solid var(--cyan);
+}
+
+/* Formulários */
+.auth-form { 
+    display: none; 
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out; 
+}
+
+.auth-form.active-form { 
+    display: flex; 
+    flex-direction: column; 
+    opacity: 1;
+}
+
+.input-group { margin-bottom: 1.2rem; display: flex; flex-direction: column; }
+
+.input-group label {
+    font-size: 0.85rem; color: var(--text-muted);
+    margin-bottom: 5px;
+}
+
+.opcional { font-size: 0.75rem; color: #555; }
+
+.input-group input {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 10px; border-radius: 6px;
+    font-family: var(--font-ui); outline: none;
+}
+
+.input-group input:focus { border-color: var(--cyan); }
+
+.btn-submit {
+    width: 100%;
+    background: var(--cyan);
+    color: #000;
+    border: none; border-radius: 6px;
+    padding: 12px; font-weight: 600; font-size: 1rem;
+    cursor: pointer; margin-top: 10px;
+    transition: background 0.3s;
+}
+
+.btn-submit:hover { background: #00d4e0; }
