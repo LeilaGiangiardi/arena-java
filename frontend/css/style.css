@@ -263,7 +263,13 @@ body {
 }
 
 .greeting { font-size: 1.8rem; font-family: var(--font-ui); font-weight: 700; }
-.user-stats { display: flex; gap: 20px; color: var(--text-muted); font-size: 0.95rem; }
+.user-stats { 
+    display: flex; 
+    align-items: center; /* Garante que o X não fique torto em relação ao texto */
+    gap: 20px; 
+    color: var(--text-muted); 
+    font-size: 0.95rem; 
+}
 .ranking-title { color: #ffdf00; } /* Dourado */
 
 /* ================= COMPONENTES DO QUIZ ================= */
@@ -443,4 +449,27 @@ body {
 /* Utilitário de IHM para ocultar elementos dinâmicos */
 .hidden {
     display: none !important;
+}
+
+/* Botão de Fechar/Abandonar Quiz - Layout Circular */
+.btn-close {
+    background-color: rgba(255, 23, 68, 0.1); /* Fundo vermelho bem transparente */
+    border: 1px solid rgba(255, 23, 68, 0.3);
+    color: #ff1744; /* Vermelho alerta */
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    margin-left: 20px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-close:hover {
+    background-color: rgba(255, 23, 68, 0.2);
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(255, 23, 68, 0.5);
 }

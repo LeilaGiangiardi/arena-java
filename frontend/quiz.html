@@ -1,24 +1,27 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arena Java - Quiz</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Inter:wght@400;600&display=swap"
+        rel="stylesheet">
     <!-- Reutilizando o CSS principal -->
     <link rel="stylesheet" href="css/style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
+
 <body class="dashboard-body">
 
-    
+
     <!-- Menu Lateral -->
     <aside class="sidebar">
         <div class="sidebar-icon" title="Perfil"><i class="ph ph-user"></i></div>
         <div class="sidebar-icon" title="Dashboard"><i class="ph ph-house"></i></div>
         <div class="sidebar-icon active" title="Quiz"><i class="ph ph-game-controller"></i></div>
         <div class="sidebar-icon" title="Configurações"><i class="ph ph-gear"></i></div>
-       <div class="sidebar-icon logout-icon" title="Sair" onclick="window.location.href='index.html'">
+        <div class="sidebar-icon logout-icon" title="Sair" onclick="window.location.href='index.html'">
             <i class="ph ph-sign-out"></i>
     </aside>
 
@@ -27,14 +30,21 @@
         <!-- Cabeçalho -->
         <header class="top-header">
             <h1 class="greeting">Desafio: <span class="highlight-cyan">O Despertar do Bytecode</span></h1>
+            
             <div class="user-stats">
                 <span>Sua pontuação: 🏅 <strong id="score-display">200</strong></span>
                 <span>Seu Ranking: <strong class="ranking-title">Criador de bugs 🐛</strong></span>
+                
+                <!-- Rota de Fuga realocada (com uma pequena margem para afastar do texto) -->
+                <button id="btn-close-quiz" class="btn-close" title="Abandonar Desafio">
+                    <i class="ph ph-x"></i>
+                </button>
             </div>
         </header>
 
         <!-- Container do Quiz (Estilo Card) -->
         <section class="quiz-card">
+            <!-- Cabeçalho da Pergunta e Cronômetro -->
             <!-- Cabeçalho da Pergunta e Cronômetro -->
             <div class="quiz-header">
                 <span id="question-counter" class="badge">Pergunta 1/10</span>
@@ -73,7 +83,9 @@
                 <span class="level-icon">🎉</span>
                 <div class="level-text">
                     <h3>Promoção de Cargo!</h3>
-                    <p>Excelente trabalho, recruta! Seus neurônios compilaram os dados perfeitamente e você acaba de evoluir para: <strong id="new-rank" class="highlight-cyan">Caçador de Ponto e Vírgula (;) 🔍</strong></p>
+                    <p>Excelente trabalho, recruta! Seus neurônios compilaram os dados perfeitamente e você acaba de
+                        evoluir para: <strong id="new-rank" class="highlight-cyan">Caçador de Ponto e Vírgula (;)
+                            🔍</strong></p>
                 </div>
             </div>
 
@@ -120,4 +132,5 @@
 
     <script src="js/quiz.js"></script>
 </body>
+
 </html>

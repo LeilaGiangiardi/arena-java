@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const feedbackTitle = document.getElementById("feedback-title");
     const feedbackExplanation = document.getElementById("feedback-explanation");
     const btnNextQuestion = document.getElementById("btn-next-question");
+    const btnCloseQuiz = document.getElementById("btn-close-quiz");
 
     // Variável para guardar a resposta atual do usuário
     let selectedAnswer = null;
@@ -42,6 +43,16 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error(error);
         });
 
+    // Rota de fuga do usuário (Heurística de IHM)
+    if (btnCloseQuiz) {
+        btnCloseQuiz.addEventListener("click", () => {
+            const confirmed = confirm("Tem certeza que deseja abandonar o quiz? Todo o seu progresso e XP desta rodada serão perdidos.");
+            if (confirmed) {
+                clearInterval(timerInterval); // Para o cronômetro
+                window.location.href = "dashboard.html"; // Volta pro hub
+            }
+        });
+    }
     // 2. Renderiza a pergunta na tela dependendo do Tipo (1, 2 ou 3)
     function renderQuestion() {
         const q = questions[currentIndex];
@@ -89,14 +100,14 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (q.tipoPergunta === 2) {
             // IHM: Lê a regra do banco para descobrir se espera texto ou número
             const expectsNumber = q.validacaoRegex && (q.validacaoRegex.includes("\\d") || q.validacaoRegex.includes("[0-9]"));
-            
+
             const input = document.createElement("input");
             // Se for número, o HTML5 já bloqueia letras e abre o teclado numérico no celular
-            input.type = expectsNumber ? "number" : "text"; 
+            input.type = expectsNumber ? "number" : "text";
             input.className = "ide-input";
             input.placeholder = expectsNumber ? "Ex: 20" : "Sua resposta...";
             input.style.minHeight = "50px";
-            
+
             input.oninput = (e) => {
                 selectedAnswer = e.target.value;
                 btnConfirm.disabled = selectedAnswer.trim() === "";
@@ -177,7 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let flags = "";
             if (padrao.startsWith("(?i)")) {
                 padrao = padrao.replace("(?i)", "");
-                flags = "i"; 
+                flags = "i";
             }
             const regex = new RegExp(padrao, flags);
             isCorrect = regex.test(selectedAnswer || "");
@@ -227,13 +238,13 @@ document.addEventListener("DOMContentLoaded", () => {
     btnNextQuestion.addEventListener("click", () => {
         feedbackModal.classList.add("hidden");
         currentIndex++;
-        
+
         if (currentIndex < questions.length) {
             renderQuestion();
         } else {
             // OCULTA A TELA DO JOGO
             document.querySelector(".quiz-card").classList.add("hidden");
-            
+
             // EXIBE A TELA DE RESUMO
             const summary = document.getElementById("summary-section");
             summary.classList.remove("hidden");
@@ -250,7 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Gera o feedback personalizado
             const ul = document.getElementById("improvement-list");
             ul.innerHTML = ""; // Limpa a lista
-            
+
             if (errorCount === 0) {
                 ul.innerHTML = "<li style='color: #00ff73;'>✨ Código impecável! Nenhum bug encontrado. Você dominou o assunto!</li>";
             } else {
