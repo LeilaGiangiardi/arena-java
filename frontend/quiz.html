@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arena Java - Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Reutilizando o CSS principal -->
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="dashboard-body">
+
+    
+    <!-- Menu Lateral -->
+    <aside class="sidebar">
+        <div class="sidebar-icon" title="Perfil"><i class="ph ph-user"></i></div>
+        <div class="sidebar-icon" title="Dashboard"><i class="ph ph-house"></i></div>
+        <div class="sidebar-icon active" title="Quiz"><i class="ph ph-game-controller"></i></div>
+        <div class="sidebar-icon" title="Configurações"><i class="ph ph-gear"></i></div>
+       <div class="sidebar-icon logout-icon" title="Sair" onclick="window.location.href='index.html'">
+            <i class="ph ph-sign-out"></i>
+    </aside>
+
+    <!-- Conteúdo Principal -->
+    <main class="main-content">
+        <!-- Cabeçalho -->
+        <header class="top-header">
+            <h1 class="greeting">Desafio: <span class="highlight-cyan">O Despertar do Bytecode</span></h1>
+            <div class="user-stats">
+                <span>Sua pontuação: 🏅 <strong id="score-display">200</strong></span>
+                <span>Seu Ranking: <strong class="ranking-title">Criador de bugs 🐛</strong></span>
+            </div>
+        </header>
+
+        <!-- Container do Quiz (Estilo Card) -->
+        <section class="quiz-card">
+            <!-- Cabeçalho da Pergunta e Cronômetro -->
+            <div class="quiz-header">
+                <span id="question-counter" class="badge">Pergunta 1/10</span>
+                <span id="xp-reward" class="badge xp-badge">+ 20 XP</span>
+                <div class="timer-container">
+                    <div id="timer-bar" class="timer-bar"></div>
+                </div>
+            </div>
+
+            <!-- Área da Pergunta -->
+            <div class="question-area">
+                <h2 id="question-text">Carregando desafio...</h2>
+                <!-- Snippet de código (opcional) -->
+                <pre id="code-snippet" class="code-snippet hidden"><code></code></pre>
+            </div>
+
+            <!-- Área de Respostas (Dinâmica via JS) -->
+            <div id="answer-area" class="answer-area">
+                <!-- Botões A, B, C, D ou Textarea serão injetados aqui -->
+            </div>
+
+            <!-- Botão de Ação -->
+            <div class="quiz-footer">
+                <button id="btn-confirm" class="btn-run" disabled>Confirmar Resposta</button>
+            </div>
+        </section>
+        <!-- TELA DE RESUMO FINAL (Escondida por padrão) -->
+        <section id="summary-section" class="summary-card hidden">
+            <div class="summary-header">
+                <h1 class="glow-text">Compilação Concluída! 🚀</h1>
+                <p>Você sobreviveu ao Módulo: O Despertar do Bytecode.</p>
+            </div>
+
+            <!-- Banner de Level Up (Aparece dinamicamente se o aluno upar) -->
+            <div id="level-up-banner" class="level-up-banner hidden">
+                <span class="level-icon">🎉</span>
+                <div class="level-text">
+                    <h3>Promoção de Cargo!</h3>
+                    <p>Excelente trabalho, recruta! Seus neurônios compilaram os dados perfeitamente e você acaba de evoluir para: <strong id="new-rank" class="highlight-cyan">Caçador de Ponto e Vírgula (;) 🔍</strong></p>
+                </div>
+            </div>
+
+            <!-- Grid de Estatísticas -->
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <span class="stat-title">XP Adquirido</span>
+                    <span id="final-xp" class="stat-value text-green">+ 0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-title">Acertos (Hits)</span>
+                    <span id="final-correct" class="stat-value text-cyan">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-title">Bugs (Erros)</span>
+                    <span id="final-errors" class="stat-value text-red">0</span>
+                </div>
+            </div>
+
+            <!-- Feedback de Melhoria -->
+            <div class="feedback-section">
+                <h3>Relatório de Otimização 🛠️</h3>
+                <ul id="improvement-list" class="improvement-list">
+                    <!-- Lista injetada pelo JavaScript -->
+                </ul>
+            </div>
+
+            <!-- Ações Finais -->
+            <div class="summary-footer">
+                <button class="btn-alt" onclick="window.location.href='dashboard.html'">🚪 Sair da Arena</button>
+                <button class="btn-run pulse-animation">🎮 Próximo Módulo</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal de Feedback (Aparece após responder) -->
+    <div id="feedback-modal" class="modal-overlay hidden">
+        <div class="modal-content feedback-content">
+            <h2 id="feedback-title">Resultado</h2>
+            <p id="feedback-explanation" class="feedback-text"></p>
+            <button id="btn-next-question" class="btn-submit">Próxima Pergunta ➔</button>
+        </div>
+    </div>
+
+    <script src="js/quiz.js"></script>
+</body>
+</html>
