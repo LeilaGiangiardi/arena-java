@@ -10,10 +10,6 @@ import java.sql.SQLException;
 
 public class UsuarioDAO {
 
-    /**
-     * Insere um novo usuário no banco de dados.
-     * Os campos 'id', 'xp', 'cargo' e 'criado_em' são gerados automaticamente pelo PostgreSQL.
-     */
     public boolean cadastrar(Usuario usuario) {
         String sql = "INSERT INTO usuarios (nome, email, github, senha_hash) VALUES (?, ?, ?, ?)";
 
@@ -22,7 +18,8 @@ public class UsuarioDAO {
 
             stmt.setString(1, usuario.getNome());
             stmt.setString(2, usuario.getEmail());
-            stmt.setString(3, usuario.getGithub());
+            // CORREÇÃO: Trata a falta da coluna GitHub para não quebrar o insert
+            stmt.setString(3, usuario.getGithub() != null ? usuario.getGithub() : "");
             stmt.setString(4, usuario.getSenhaHash());
 
             int linhasAfetadas = stmt.executeUpdate();
@@ -35,9 +32,6 @@ public class UsuarioDAO {
         }
     }
 
-    /**
-     * Busca um usuário pelo email (essencial para o Login).
-     */
     public Usuario buscarPorEmail(String email) {
         String sql = "SELECT * FROM usuarios WHERE email = ?";
         Usuario usuario = null;

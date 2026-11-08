@@ -4,76 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arena Java - Login</title>
-    <!-- Link para a fonte (Fira Code para o título de programação e Inter para o resto) -->
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="login-body">
-    <!-- Fundo de Grade Retrô Cyberpunk -->
+
+    <!-- Fundo Synthwave -->
     <div class="grid-background"></div>
 
-    <!-- Conteúdo Principal -->
+    <!-- Tela Principal Limpa (Splash Screen) -->
     <main class="hero-container">
-        <h1 class="hero-title">
-            System.out.play("<span class="highlight-cyan">Arena Java</span>");
-        </h1>
-        <p class="hero-subtitle">
-            Fuja do título de Criador de Bugs, ganhe XP e prove que você é o Compilador Humano de BSI 🧠.
-        </p>
-        <button id="btn-run" class="btn-run">
-            ▶ Run (Shift + F10)
-        </button>
+        <h1 class="hero-title">System.out.play("<span class="highlight-cyan">Arena Java</span>");</h1>
+        <p class="hero-subtitle">Fuja do título de Criador de Bugs, ganhe XP e prove que você é o <br>Compilador Humano de BSI 🧠.</p>
+        
+        <button id="btn-run" class="btn-run pulse-animation">▶ Run (Shift + F10)</button>
     </main>
 
-    <!-- Pop-up (Modal) de Autenticação -->
+    <!-- Modal Flutuante de Login / Cadastro -->
     <div id="auth-modal" class="modal-overlay hidden">
         <div class="modal-content">
-            <button id="btn-close" class="btn-close">&times;</button>
+            <button id="btn-close" class="btn-close"><i class="ph ph-x"></i></button>
             
-            <!-- Abas para alternar entre Login e Cadastro -->
+            <!-- Abas -->
             <div class="modal-tabs">
-                <button id="tab-login" class="tab-btn active">Entrar</button>
-                <button id="tab-cadastro" class="tab-btn">Cadastrar</button>
+                <button id="tab-login" class="tab-btn active">Login</button>
+                <button id="tab-cadastro" class="tab-btn">Cadastro</button>
             </div>
 
-            <!-- Formulário de Login -->
-            <form id="form-login" class="auth-form active-form">
-                <div class="input-group">
-                    <label for="login-email">E-mail Acadêmico</label>
-                    <input type="email" id="login-email" required placeholder="ex: aluno@si.edu.br">
+            <!-- Único formulário inteligente (Comunica com a AuthServlet) -->
+            <form id="auth-form" class="auth-form">
+                <div id="nome-group" class="input-group hidden">
+                    <label>Nome do Calouro</label>
+                    <input type="text" id="nome" placeholder="Ex: Leila">
                 </div>
+                
                 <div class="input-group">
-                    <label for="login-senha">Senha</label>
-                    <input type="password" id="login-senha" required placeholder="••••••••">
+                    <label>E-mail Acadêmico</label>
+                    <input type="email" id="email" placeholder="aluno@bsi.edu.br" required>
                 </div>
-                <button type="submit" class="btn-submit">Acessar Arena</button>
-            </form>
+                
+                <div class="input-group">
+                    <label>Senha</label>
+                    <input type="password" id="senha" placeholder="••••••••" required>
+                </div>
 
-            <!-- Formulário de Cadastro -->
-            <form id="form-cadastro" class="auth-form hidden-form">
-                <div class="input-group">
-                    <label for="cad-nome">Nome Completo</label>
-                    <input type="text" id="cad-nome" required placeholder="Seu nome">
-                </div>
-                <div class="input-group">
-                    <label for="cad-email">E-mail Acadêmico</label>
-                    <input type="email" id="cad-email" required placeholder="aluno@si.edu.br">
-                </div>
-                <div class="input-group">
-                    <label for="cad-github">Usuário do GitHub <span class="opcional">(Opcional)</span></label>
-                    <input type="text" id="cad-github" placeholder="ex: seunomegit">
-                </div>
-                <div class="input-group">
-                    <label for="cad-senha">Crie uma Senha</label>
-                    <input type="password" id="cad-senha" required placeholder="Mínimo 6 caracteres">
-                </div>
-                <button type="submit" class="btn-submit">Criar Conta</button>
+                <p id="error-msg" class="text-red hidden" style="margin-bottom: 15px; font-weight: bold;"></p>
+
+                <button type="submit" id="btn-submit" class="btn-submit">ENTRAR</button>
             </form>
         </div>
     </div>
 
-    <!-- Script importado no final para garantir que o HTML carregou -->
-    <script src="js/login.js"></script>
+    <script src="js/auth.js"></script>
 </body>
 </html>
