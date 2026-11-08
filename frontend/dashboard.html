@@ -24,10 +24,10 @@
     <main class="main-content">
         <!-- Cabeçalho -->
         <header class="top-header">
-            <h1 class="greeting">Boa noite, <span class="highlight-cyan">Leila!</span></h1>
+            <h1 class="greeting"><span id="saudacao">Boa noite</span>, <span class="highlight-cyan" id="user-nome">Carregando...</span>!</h1>
             <div class="user-stats">
-                <span>Sua pontuação: 🏅 <strong>200</strong></span>
-                <span>Seu Ranking: <strong class="ranking-title">Criador de bugs 🐛</strong></span>
+                <span>Sua pontuação: 🏅 <strong id="user-xp">...</strong></span>
+                <span>Seu Ranking: <strong class="ranking-title" id="user-cargo">...</strong></span>
             </div>
         </header>
 
@@ -37,7 +37,7 @@
             <!-- Coluna Esquerda (Resumo e Futuras Atualizações) -->
             <div class="dashboard-left">
                 
-                <!-- Novo Card: Resumo do Aluno (Substituindo Notícias) -->
+                <!-- Card: Resumo do Aluno -->
                 <section class="dashboard-card summary-overview">
                     <div class="card-header-flex">
                         <h2>Seu Desempenho na Arena 🚀</h2>
@@ -49,7 +49,7 @@
                         <div class="overview-box fire-streak">
                             <i class="ph-fill ph-fire"></i>
                             <div>
-                                <h3>5 Dias</h3>
+                                <h3 id="stat-ofensiva">- Dias</h3>
                                 <p>Ofensiva Java</p>
                             </div>
                         </div>
@@ -58,7 +58,7 @@
                         <div class="overview-box hits">
                             <i class="ph-fill ph-target"></i>
                             <div>
-                                <h3>42 / 50</h3>
+                                <h3 id="stat-acertos">- / -</h3>
                                 <p>Questões Acertadas</p>
                             </div>
                         </div>
@@ -67,7 +67,7 @@
                         <div class="overview-box strong-point">
                             <i class="ph-fill ph-brain"></i>
                             <div>
-                                <h3>Laços de Repetição</h3>
+                                <h3 id="stat-dominio">...</h3>
                                 <p>Seu maior domínio</p>
                             </div>
                         </div>
@@ -95,55 +95,15 @@
                 <h2>Ranking Global BSI</h2>
                 <p class="subtitle">Alunos com as notas mais altas</p>
 
-                <ul class="ranking-list">
-                    <li class="ranking-item top-1">
-                        <div class="rank-pos">1</div>
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Gabriel" alt="Avatar" class="avatar">
-                        <div class="rank-info">
-                            <strong>Gabriel</strong>
-                            <span>Compilador Humano 🧠</span>
-                        </div>
-                        <div class="rank-score">🏅 950</div>
-                    </li>
-                    <li class="ranking-item top-2">
-                        <div class="rank-pos">2</div>
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Anna" alt="Avatar" class="avatar">
-                        <div class="rank-info">
-                            <strong>Anna Luiza</strong>
-                            <span>Mestre do Stack Overflow 🧙‍♂️</span>
-                        </div>
-                        <div class="rank-score">🏅 920</div>
-                    </li>
-                    <li class="ranking-item top-3">
-                        <div class="rank-pos">3</div>
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Marcos" alt="Avatar" class="avatar">
-                        <div class="rank-info">
-                            <strong>Marcos Antonio</strong>
-                            <span>Refém da I.A. 🤖</span>
-                        </div>
-                        <div class="rank-score">🏅 880</div>
-                    </li>
-                    <li class="ranking-item">
-                        <div class="rank-pos">4</div>
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Larissa" alt="Avatar" class="avatar">
-                        <div class="rank-info">
-                            <strong>Larissa</strong>
-                            <span>Estagiário do Café ☕</span>
-                        </div>
-                        <div class="rank-score">🏅 820</div>
-                    </li>
-                    <li class="ranking-item current-user">
-                        <div class="rank-pos">5</div>
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Leila" alt="Avatar" class="avatar">
-                        <div class="rank-info">
-                            <strong>Leila (Você)</strong>
-                            <span>Criador de bugs 🐛</span>
-                        </div>
-                        <div class="rank-score">🏅 200</div>
-                    </li>
+                <!-- A lista está vazia, o JavaScript vai preencher automaticamente com os dados do banco -->
+                <ul class="ranking-list" id="ranking-list">
+                    <!-- Os itens do ranking serão injetados aqui -->
                 </ul>
             </aside>
         </div>
     </main>
+
+    <!-- Script de integração com o Backend -->
+    <script src="js/dashboard.js"></script>
 </body>
 </html>

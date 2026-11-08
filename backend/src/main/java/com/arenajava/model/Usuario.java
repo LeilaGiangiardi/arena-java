@@ -3,7 +3,7 @@ package com.arenajava.model;
 import java.sql.Timestamp;
 
 public class Usuario {
-    
+
     private Integer id;
     private String nome;
     private String email;
@@ -13,11 +13,19 @@ public class Usuario {
     private String cargo;
     private Timestamp criadoEm;
 
+    // Novos campos do Dashboard
+    private int ofensiva;
+    private int questoesAcertadas;
+    private int totalQuestoes;
+    private String dominio;
+
     public Usuario() {
     }
+
     /**
      * Construtor utilitário para cadastrar um novo usuário.
-     * Não inclui id, xp, cargo e criadoEm porque estes são gerados automaticamente pelo PostgreSQL.
+     * Não inclui id, xp, cargo e criadoEm porque estes são gerados automaticamente
+     * pelo PostgreSQL.
      */
     public Usuario(String nome, String email, String github, String senhaHash) {
         this.nome = nome;
@@ -29,9 +37,11 @@ public class Usuario {
     }
 
     /**
-     * Construtor completo para reidratar o objeto quando os dados vêm do banco via JDBC.
+     * Construtor completo para reidratar o objeto quando os dados vêm do banco via
+     * JDBC.
      */
-    public Usuario(Integer id, String nome, String email, String github, String senhaHash, int xp, String cargo, Timestamp criadoEm) {
+    public Usuario(Integer id, String nome, String email, String github, String senhaHash, int xp, String cargo,
+            Timestamp criadoEm) {
         this.id = id;
         this.nome = nome;
         this.email = email;
@@ -106,6 +116,38 @@ public class Usuario {
 
     public void setCriadoEm(Timestamp criadoEm) {
         this.criadoEm = criadoEm;
+    }
+
+    public int getOfensiva() {
+        return ofensiva;
+    }
+
+    public void setOfensiva(int ofensiva) {
+        this.ofensiva = ofensiva;
+    }
+
+    public int getQuestoesAcertadas() {
+        return questoesAcertadas;
+    }
+
+    public void setQuestoesAcertadas(int questoesAcertadas) {
+        this.questoesAcertadas = questoesAcertadas;
+    }
+
+    public int getTotalQuestoes() {
+        return totalQuestoes;
+    }
+
+    public void setTotalQuestoes(int totalQuestoes) {
+        this.totalQuestoes = totalQuestoes;
+    }
+
+    public String getDominio() {
+        return dominio;
+    }
+
+    public void setDominio(String dominio) {
+        this.dominio = dominio;
     }
 
     @Override

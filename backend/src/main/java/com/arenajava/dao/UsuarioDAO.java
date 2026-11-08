@@ -14,7 +14,7 @@ public class UsuarioDAO {
         String sql = "INSERT INTO usuarios (nome, email, github, senha_hash) VALUES (?, ?, ?, ?)";
 
         try (Connection conexao = ConexaoJDBC.conectar();
-             PreparedStatement stmt = conexao.prepareStatement(sql)) {
+                PreparedStatement stmt = conexao.prepareStatement(sql)) {
 
             stmt.setString(1, usuario.getNome());
             stmt.setString(2, usuario.getEmail());
@@ -37,10 +37,10 @@ public class UsuarioDAO {
         Usuario usuario = null;
 
         try (Connection conexao = ConexaoJDBC.conectar();
-             PreparedStatement stmt = conexao.prepareStatement(sql)) {
+                PreparedStatement stmt = conexao.prepareStatement(sql)) {
 
             stmt.setString(1, email);
-            
+
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     usuario = new Usuario();
@@ -52,6 +52,12 @@ public class UsuarioDAO {
                     usuario.setXp(rs.getInt("xp"));
                     usuario.setCargo(rs.getString("cargo"));
                     usuario.setCriadoEm(rs.getTimestamp("criado_em"));
+
+                    // Mapeia colunas do dashboard
+                    usuario.setOfensiva(rs.getInt("ofensiva"));
+                    usuario.setQuestoesAcertadas(rs.getInt("questoes_acertadas"));
+                    usuario.setTotalQuestoes(rs.getInt("total_questoes"));
+                    usuario.setDominio(rs.getString("dominio"));
                 }
             }
         } catch (SQLException e) {
@@ -59,5 +65,27 @@ public class UsuarioDAO {
             e.printStackTrace();
         }
         return usuario;
+    }
+
+    // Novo método para o Servlet puxar o Top 5
+    public java.util.List<Usuario> listarTop5Ranking() {
+        java.util.List<Usuario> lista = new java.util.ArrayList<>();
+        String sql = "SELECT nome, cargo, xp FROM usuarios ORDER BY xp DESC LIMIT 5";
+
+        try (Connection conexao = ConexaoJDBC.conectar();
+                PreparedStatement stmt = conexao.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Usuario user = new Usuario();
+                user.setNome(rs.getString("nome"));
+                user.setCargo(rs.getString("cargo"));
+                user.setXp(rs.getInt("xp"));
+                lista.add(user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return lista;
     }
 }
