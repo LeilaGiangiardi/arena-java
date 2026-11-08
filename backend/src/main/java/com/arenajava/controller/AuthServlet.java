@@ -55,7 +55,7 @@ public class AuthServlet extends HttpServlet {
                     jsonResp.addProperty("xp", usuario.getXp());
                 } else {
                     jsonResp.addProperty("sucesso", false);
-                    jsonResp.addProperty("mensagem", "Credenciais inválidas. E-mail ou senha incorretos.");
+                    jsonResp.addProperty("mensagem", "Credenciais inválidas.");
                 }
             } 
             else if ("cadastrar".equals(acao)) {

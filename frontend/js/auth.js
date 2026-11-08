@@ -66,22 +66,33 @@ document.addEventListener("DOMContentLoaded", () => {
     authForm.addEventListener("submit", (e) => {
         e.preventDefault();
 
+        const emailValue = document.getElementById("email").value;
+        const senhaValue = document.getElementById("senha").value;
+
+        // Se o usuário clicar em Entrar sem digitar nada, bloqueia aqui mesmo e mostra o erro curto
+        if (isLogin && (!emailValue || !senhaValue)) {
+            errorMsg.innerText = "⚠️ Credenciais inválidas.";
+            errorMsg.style.color = "var(--error)"; 
+            errorMsg.classList.remove("hidden");
+            return; 
+        }
+
         const payload = {
             acao: isLogin ? "login" : "cadastrar",
-            email: document.getElementById("email").value,
-            senha: document.getElementById("senha").value
+            email: emailValue,
+            senha: senhaValue
         };
 
         if (!isLogin) {
             payload.nome = nomeInput.value;
         }
+
         fetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         })
         .then(response => {
-            // Garante que o Front-end entenda se o Java der erro de servidor
             if (!response.ok) {
                 throw new Error("Erro HTTP: " + response.status);
             }
@@ -94,17 +105,32 @@ document.addEventListener("DOMContentLoaded", () => {
                 sessionStorage.setItem("cargoUsuario", data.cargo);
                 sessionStorage.setItem("xpUsuario", data.xp);
 
-                window.location.href = "dashboard.html";
+                // Mostra a mensagem de sucesso (verde/azul) vinda do Java
+                errorMsg.innerText = "✅ " + data.mensagem;
+                errorMsg.style.color = "var(--cyan)"; 
+                errorMsg.classList.remove("hidden");
+
+                // Espera 1.5 segundos antes de jogar pra Dashboard para o usuário ver a mensagem
+                setTimeout(() => {
+                    window.location.href = "dashboard.html";
+                }, 1500);
+
             } else {
-                // AQUI ESTAVA O PROBLEMA: 
-                // Se der erro, mostre o erro e PARE.
-                errorMsg.innerText = "⚠️ " + data.mensagem;
+                // Força o texto para ser simples e direto, conforme pedido
+                if (isLogin) {
+                    errorMsg.innerText = "⚠️ Credenciais inválidas.";
+                } else {
+                    errorMsg.innerText = "⚠️ " + data.mensagem; // Mantém a mensagem do Java pro cadastro
+                }
+                
+                errorMsg.style.color = "var(--error)"; 
                 errorMsg.classList.remove("hidden");
             }
         })
         .catch(error => {
             // Captura de falhas gerais de rede
             errorMsg.innerText = "⚠️ Falha ao tentar conectar. O Tomcat está ligado?";
+            errorMsg.style.color = "var(--error)";
             errorMsg.classList.remove("hidden");
             console.error("Detalhes do erro:", error);
         });
