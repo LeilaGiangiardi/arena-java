@@ -1,20 +1,25 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arena Java - Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Inter:wght@400;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
+
 <body class="dashboard-body">
 
     <!-- Menu Lateral -->
     <aside class="sidebar">
         <div class="sidebar-icon" title="Perfil"><i class="ph ph-user"></i></div>
         <div class="sidebar-icon active" title="Dashboard"><i class="ph ph-house"></i></div>
-        <div class="sidebar-icon" title="Quiz" onclick="window.location.href='quiz.html'"><i class="ph ph-game-controller"></i></div>
+        <div class="sidebar-icon" title="Quiz" onclick="window.location.href='quiz.html'"><i
+                class="ph ph-game-controller"></i></div>
         <div class="sidebar-icon" title="Configurações"><i class="ph ph-gear"></i></div>
         <div class="sidebar-icon logout-icon" title="Sair" onclick="window.location.href='index.html'">
             <i class="ph ph-sign-out"></i>
@@ -24,7 +29,8 @@
     <main class="main-content">
         <!-- Cabeçalho -->
         <header class="top-header">
-            <h1 class="greeting"><span id="saudacao">Boa noite</span>, <span class="highlight-cyan" id="user-nome">Carregando...</span>!</h1>
+            <h1 class="greeting"><span id="saudacao">Boa noite</span>, <span class="highlight-cyan"
+                    id="user-nome">Carregando...</span>!</h1>
             <div class="user-stats">
                 <span>Sua pontuação: 🏅 <strong id="user-xp">...</strong></span>
                 <span>Seu Ranking: <strong class="ranking-title" id="user-cargo">...</strong></span>
@@ -33,17 +39,17 @@
 
         <!-- Grid Principal do Dashboard -->
         <div class="dashboard-grid">
-            
+
             <!-- Coluna Esquerda (Resumo e Futuras Atualizações) -->
             <div class="dashboard-left">
-                
+
                 <!-- Card: Resumo do Aluno -->
                 <section class="dashboard-card summary-overview">
                     <div class="card-header-flex">
                         <h2>Seu Desempenho na Arena 🚀</h2>
                         <button class="btn-run" onclick="window.location.href='quiz.html'">Jogar Agora</button>
                     </div>
-                    
+
                     <div class="overview-stats">
                         <!-- Ofensiva (Foguinho Duolingo) -->
                         <div class="overview-box fire-streak">
@@ -95,15 +101,37 @@
                 <h2>Ranking Global BSI</h2>
                 <p class="subtitle">Alunos com as notas mais altas</p>
 
-                <!-- A lista está vazia, o JavaScript vai preencher automaticamente com os dados do banco -->
                 <ul class="ranking-list" id="ranking-list">
-                    <!-- Os itens do ranking serão injetados aqui -->
+                    <!-- Os 3 ou 4 primeiros serão injetados aqui -->
                 </ul>
+
+                <!-- NOVO: Botão que preenche o espaço e abre o Modal -->
+                <button id="btn-ver-todos" class="btn-run" style="margin-top: auto; width: 100%;">
+                    Ver Ranking Completo
+                </button>
             </aside>
         </div>
     </main>
 
+    <!-- NOVO: Pop-up do Ranking Completo e Pesquisa -->
+    <div id="ranking-modal" class="modal-overlay hidden">
+        <div class="modal-content ranking-content">
+            <div class="modal-header">
+                <h2>Ranking da Turma 🏆</h2>
+                <button id="btn-close-ranking" class="btn-close"><i class="ph ph-x"></i></button>
+            </div>
+            
+            <!-- Barra de Pesquisa Leve e Rápida -->
+            <input type="text" id="search-ranking" class="search-input" placeholder="🔍 Pesquise por nome ou cargo (ex: Pleno)...">
+            
+            <ul class="ranking-list full-ranking-list" id="full-ranking-list">
+                <!-- A lista completa filtrada aparecerá aqui -->
+            </ul>
+        </div>
+    </div>
+
     <!-- Script de integração com o Backend -->
     <script src="js/dashboard.js"></script>
 </body>
+
 </html>

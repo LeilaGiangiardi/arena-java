@@ -288,3 +288,95 @@ body {
 .hidden {
     display: none !important;
 }
+
+/* --- AJUSTE DA GRID PRINCIPAL --- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* Coluna esquerda maior, direita menor */
+    gap: 20px;
+    align-items: stretch; /* ISSO FAZ AS COLUNAS TEREM A MESMA ALTURA */
+}
+
+.ranking-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%; 
+    justify-content: space-between; /* Espalha o conteúdo empurrando o botão pro final */
+}
+
+/* --- BARRA DE PESQUISA DO MODAL --- */
+.search-input {
+    width: 100%;
+    height: 45px; /* Trava a altura para não virar um bloco de código */
+    margin-bottom: 20px;
+    padding: 0 16px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    border: 1px solid #4a4e69;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: #00ffff; /* Brilho cyan ao clicar */
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* --- BOTÃO VER RANKING --- */
+#btn-ver-todos {
+    margin-top: auto; 
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* Garante espaçamento entre os itens da lista do ranking */
+.ranking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; 
+    margin-bottom: 20px;
+    flex-grow: 1; /* Faz a lista crescer e empurrar o resto */
+}
+
+/* --- ESTILOS DO NOVO POP-UP (MODAL) --- */
+.ranking-content {
+    max-width: 550px; /* Aumentado levemente para respirar mais */
+    width: 90%;
+    max-height: 85vh; 
+    display: flex;
+    flex-direction: column;
+    padding: 30px; /* Mais espaço interno */
+}
+
+/* --- LISTA COM SCROLL DENTRO DO MODAL --- */
+.full-ranking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espaço entre os usuários */
+    overflow-y: auto; /* Cria a barra de rolagem vertical */
+    max-height: 400px; /* Limita a altura da lista para forçar o scroll */
+    padding-right: 15px; /* Evita que o texto encoste na barra de rolagem */
+    flex-grow: 1; 
+}
+
+/* Customização opcional da barra de rolagem (estilo Cyberpunk) */
+.full-ranking-list::-webkit-scrollbar {
+    width: 8px;
+}
+.full-ranking-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05); 
+    border-radius: 10px;
+}
+.full-ranking-list::-webkit-scrollbar-thumb {
+    background: #4a4e69; 
+    border-radius: 10px;
+}
+.full-ranking-list::-webkit-scrollbar-thumb:hover {
+    background: #00ffff; /* Brilho neon ao passar o mouse */
+}

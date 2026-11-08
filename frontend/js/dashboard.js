@@ -8,37 +8,45 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (hora >= 12 && hora < 18) {
         textoSaudacao = "Boa tarde";
     }
-    document.getElementById("saudacao").innerText = textoSaudacao;
+    const saudacaoEl = document.getElementById("saudacao");
+    if (saudacaoEl) saudacaoEl.innerText = textoSaudacao;
 
     // 2. Validação de Login e Chamada da API
     const emailUsuario = sessionStorage.getItem("emailUsuario");
 
-    if (!emailUsuario || emailUsuario === "undefined") {
-        window.location.href = "index.html"; // Redireciona se não estiver logado
+    if (!emailUsuario || emailUsuario === "undefined" || emailUsuario === "null") {
+        window.location.href = "index.html"; 
         return;
     }
 
     carregarDashboard(emailUsuario);
 });
 
+// Variável global para armazenar todos os alunos do banco sem precisar refazer o fetch
+let rankingGlobal = [];
+
 function carregarDashboard(email) {
     const url = `http://localhost:8080/backend/api/dashboard?email=${encodeURIComponent(email)}`;
     
-    console.log("Tentando buscar dados na URL:", url);
-
     fetch(url)
         .then(async response => {
-            // Se o Tomcat retornar uma página de erro (404 ou 500) em vez de JSON
             if (!response.ok) {
-                const erroTexto = await response.text();
                 throw new Error(`Erro do Servidor HTTP ${response.status}. O Java não respondeu corretamente.`);
             }
             return response.json();
         })
         .then(data => {
             if (data.sucesso) {
+                // Guarda a lista completa em memória
+                rankingGlobal = data.ranking;
+                
+                // Atualiza o painel esquerdo
                 atualizarEstatisticaHeader(data.estatisticas);
-                atualizarRanking(data.ranking, data.estatisticas.nome);
+                
+                // Renderiza APENAS OS 4 PRIMEIROS no painel fixo do Dashboard
+                const top4 = rankingGlobal.slice(0, 4);
+                atualizarRanking(top4, data.estatisticas.nome, "ranking-list");
+                
             } else {
                 document.getElementById("user-nome").innerText = "Usuário não encontrado";
                 console.error("O Java rodou, mas retornou {sucesso: false}. Verifique o email no banco.");
@@ -60,13 +68,23 @@ function atualizarEstatisticaHeader(stats) {
     document.getElementById("stat-dominio").innerText = stats.dominio;
 }
 
-function atualizarRanking(listaAlunos, nomeUsuarioLogado) {
-    const rankingContainer = document.getElementById("ranking-list");
+// 3. Função Unificada para renderizar a lista (No Dashboard ou no Modal)
+function atualizarRanking(listaAlunos, nomeUsuarioLogado, idContainer) {
+    const rankingContainer = document.getElementById(idContainer);
+    if (!rankingContainer) return;
+    
     rankingContainer.innerHTML = ""; 
 
-    listaAlunos.forEach((aluno, index) => {
-        const posicao = index + 1;
-        let estiloPos = posicao === 1 ? "top-1" : posicao === 2 ? "top-2" : posicao === 3 ? "top-3" : "";
+    if (listaAlunos.length === 0) {
+        rankingContainer.innerHTML = `<li style="text-align:center; padding:20px; color:#a0a5b5;">Nenhum programador encontrado.</li>`;
+        return;
+    }
+
+    listaAlunos.forEach((aluno) => {
+        // Encontra a posição verdadeira dele no ranking global
+        const posicaoOriginal = rankingGlobal.findIndex(a => a.nome === aluno.nome) + 1;
+        
+        let estiloPos = posicaoOriginal === 1 ? "top-1" : posicaoOriginal === 2 ? "top-2" : posicaoOriginal === 3 ? "top-3" : "";
         let isCurrentUser = (aluno.nome === nomeUsuarioLogado);
         let currentClass = isCurrentUser ? "current-user" : "";
 
@@ -74,7 +92,7 @@ function atualizarRanking(listaAlunos, nomeUsuarioLogado) {
         li.className = `ranking-item ${estiloPos} ${currentClass}`;
         
         li.innerHTML = `
-            <div class="rank-pos">${posicao}</div>
+            <div class="rank-pos">${posicaoOriginal}</div>
             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${aluno.nome}" alt="Avatar" class="avatar">
             <div class="rank-info">
                 <strong>${aluno.nome} ${isCurrentUser ? '(Você)' : ''}</strong>
@@ -83,5 +101,54 @@ function atualizarRanking(listaAlunos, nomeUsuarioLogado) {
             <div class="rank-score">🏅 ${aluno.xp}</div>
         `;
         rankingContainer.appendChild(li);
+    });
+}
+
+// ==========================================
+// 4. LÓGICA DO POP-UP E PESQUISA RÁPIDA
+// ==========================================
+const rankingModal = document.getElementById("ranking-modal");
+const btnVerTodos = document.getElementById("btn-ver-todos");
+const btnCloseRanking = document.getElementById("btn-close-ranking");
+const searchInput = document.getElementById("search-ranking");
+const nomeDoUsuario = sessionStorage.getItem("nomeUsuario");
+
+// Abrir Modal
+if (btnVerTodos) {
+    btnVerTodos.addEventListener("click", () => {
+        rankingModal.classList.remove("hidden");
+        if (searchInput) searchInput.value = ""; // Limpa a barra de busca
+        
+        // Puxa e desenha a lista completa no pop-up
+        atualizarRanking(rankingGlobal, nomeDoUsuario, "full-ranking-list");
+    });
+}
+
+// Fechar Modal (botão X)
+if (btnCloseRanking) {
+    btnCloseRanking.addEventListener("click", () => {
+        rankingModal.classList.add("hidden");
+    });
+}
+
+// Fechar Modal clicando fora dele
+window.addEventListener("click", (e) => {
+    if (e.target === rankingModal) {
+        rankingModal.classList.add("hidden");
+    }
+});
+
+// Pesquisa Instantânea no lado do Cliente (Muito leve)
+if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+        const termoBusca = e.target.value.toLowerCase(); 
+        
+        // Filtra os alunos ignorando letras maiúsculas/minúsculas
+        const alunosFiltrados = rankingGlobal.filter(aluno => 
+            aluno.nome.toLowerCase().includes(termoBusca) || 
+            aluno.cargo.toLowerCase().includes(termoBusca)
+        );
+        
+        atualizarRanking(alunosFiltrados, nomeDoUsuario, "full-ranking-list");
     });
 }
