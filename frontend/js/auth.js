@@ -76,6 +76,13 @@ document.addEventListener("DOMContentLoaded", () => {
             errorMsg.classList.remove("hidden");
             return; 
         }
+        // Se o usuário tentar Cadastrar com campos em branco, bloqueia
+        if (!isLogin && (!emailValue || !senhaValue || !nomeInput.value.trim())) {
+            errorMsg.innerText = "⚠️ Preencha todos os campos para cadastrar.";
+            errorMsg.style.color = "var(--error)"; 
+            errorMsg.classList.remove("hidden");
+            return; 
+        }
 
         const payload = {
             acao: isLogin ? "login" : "cadastrar",

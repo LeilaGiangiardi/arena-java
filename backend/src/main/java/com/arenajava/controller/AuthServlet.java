@@ -59,25 +59,35 @@ public class AuthServlet extends HttpServlet {
                 }
             } 
             else if ("cadastrar".equals(acao)) {
-                if (dao.buscarPorEmail(email) != null) {
+                // 1. BLINDAGEM: Verifica se e-mail e senha não são nulos nem vazios após remover espaços
+                if (email == null || email.trim().isEmpty() || senha == null || senha.trim().isEmpty()) {
+                    jsonResp.addProperty("sucesso", false);
+                    jsonResp.addProperty("mensagem", "E-mail e senha são obrigatórios.");
+                } 
+                // 2. Verifica se o e-mail já está em uso
+                else if (dao.buscarPorEmail(email) != null) {
                     jsonResp.addProperty("sucesso", false);
                     jsonResp.addProperty("mensagem", "Este e-mail já está em uso.");
-                } else {
-                    // Pega o nome. Se não vier no JSON por algum motivo, usa "Aluno"
-                    String nome = jsonReq.has("nome") ? jsonReq.get("nome").getAsString() : "Aluno";
+                } 
+                // 3. Tudo certo, prossegue com o cadastro
+                else {
+                    // Pega o nome. Se não vier ou vier vazio, usa "Aluno"
+                    String nome = "Aluno";
+                    if (jsonReq.has("nome") && !jsonReq.get("nome").getAsString().trim().isEmpty()) {
+                        nome = jsonReq.get("nome").getAsString().trim();
+                    }
                     
                     Usuario novoUsuario = new Usuario();
                     novoUsuario.setNome(nome);
-                    novoUsuario.setEmail(email);
+                    novoUsuario.setEmail(email.trim()); // Salva sem espaços no começo/fim
                     novoUsuario.setSenhaHash(senha);
-                    novoUsuario.setGithub(""); // Evita quebrar o PostgreSQL com campos nulos
+                    novoUsuario.setGithub(""); 
                     
                     if (dao.cadastrar(novoUsuario)) {
                         jsonResp.addProperty("sucesso", true);
                         jsonResp.addProperty("mensagem", "Conta criada com sucesso!");
                         
-                        // Devolve os dados para login instantâneo
-                        jsonResp.addProperty("email", email);
+                        jsonResp.addProperty("email", email.trim());
                         jsonResp.addProperty("nome", nome);
                         jsonResp.addProperty("cargo", "Criador de bugs 🐛");
                         jsonResp.addProperty("xp", 0);

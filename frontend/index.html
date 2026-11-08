@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arena Java - Login</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Inter:wght@400;600&display=swap"
+        rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body class="login-body">
 
     <!-- Fundo Synthwave -->
@@ -16,8 +19,9 @@
     <!-- Tela Principal Limpa (Splash Screen) -->
     <main class="hero-container">
         <h1 class="hero-title">System.out.play("<span class="highlight-cyan">Arena Java</span>");</h1>
-        <p class="hero-subtitle">Fuja do título de Criador de Bugs, ganhe XP e prove que você é o <br>Compilador Humano de BSI 🧠.</p>
-        
+        <p class="hero-subtitle">Fuja do título de Criador de Bugs, ganhe XP e prove que você é o <br>Compilador Humano
+            de BSI 🧠.</p>
+
         <button id="btn-run" class="btn-run pulse-animation">▶ Run (Shift + F10)</button>
     </main>
 
@@ -25,7 +29,7 @@
     <div id="auth-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <button id="btn-close" class="btn-close"><i class="ph ph-x"></i></button>
-            
+
             <!-- Abas -->
             <div class="modal-tabs">
                 <button id="tab-login" class="tab-btn active">Login</button>
@@ -38,15 +42,14 @@
                     <label>Nome do Calouro</label>
                     <input type="text" id="nome" placeholder="Ex: Leila">
                 </div>
-                
+
                 <div class="input-group">
                     <label>E-mail Acadêmico</label>
-                    <input type="text" id="email" placeholder="aluno@ufrpe.br">
+                    <input type="email" id="email" placeholder="aluno@bsi.edu.br" required>
                 </div>
-                
                 <div class="input-group">
                     <label>Senha</label>
-                    <input type="password" id="senha" placeholder="••••••••">
+                    <input type="password" id="senha" placeholder="••••••••" required>
                 </div>
 
                 <p id="error-msg" class="text-red hidden" style="margin-bottom: 15px; font-weight: bold;"></p>
@@ -58,4 +61,5 @@
 
     <script src="js/auth.js"></script>
 </body>
+
 </html>
