@@ -141,11 +141,11 @@ if (searchInput) {
     searchInput.addEventListener("input", (e) => {
         const termoBusca = e.target.value.toLowerCase(); 
         
-        // MUDANÇA AQUI: Filtra por nome, cargo ou XP
+        // Substituído de .includes() para .startsWith() para buscar apenas pelas iniciais
         const alunosFiltrados = rankingGlobal.filter(aluno => 
-            aluno.nome.toLowerCase().includes(termoBusca) || 
-            aluno.cargo.toLowerCase().includes(termoBusca) ||
-            aluno.xp.toString().includes(termoBusca)
+            aluno.nome.toLowerCase().startsWith(termoBusca) || 
+            aluno.cargo.toLowerCase().startsWith(termoBusca) ||
+            aluno.xp.toString().startsWith(termoBusca)
         );
         
         atualizarRanking(alunosFiltrados, nomeDoUsuario, "full-ranking-list");
