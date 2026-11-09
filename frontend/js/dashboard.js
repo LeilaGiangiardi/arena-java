@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     carregarDashboard(emailUsuario);
 });
 
-// Variável global para armazenar todos os alunos do banco sem precisar refazer o fetch
+// Variável global para armazenar todos os alunos do banco
 let rankingGlobal = [];
 
 function carregarDashboard(email) {
@@ -37,10 +37,9 @@ function carregarDashboard(email) {
         })
         .then(data => {
             if (data.sucesso) {
-                // Guarda a lista completa em memória
+                // Guarda a lista COMPLETA na memória
                 rankingGlobal = data.ranking;
                 
-                // Atualiza o painel esquerdo
                 atualizarEstatisticaHeader(data.estatisticas);
                 
                 // Renderiza APENAS OS 4 PRIMEIROS no painel fixo do Dashboard
@@ -68,7 +67,7 @@ function atualizarEstatisticaHeader(stats) {
     document.getElementById("stat-dominio").innerText = stats.dominio;
 }
 
-// 3. Função Unificada para renderizar a lista (No Dashboard ou no Modal)
+// 3. Função Unificada para renderizar a lista
 function atualizarRanking(listaAlunos, nomeUsuarioLogado, idContainer) {
     const rankingContainer = document.getElementById(idContainer);
     if (!rankingContainer) return;
@@ -81,7 +80,7 @@ function atualizarRanking(listaAlunos, nomeUsuarioLogado, idContainer) {
     }
 
     listaAlunos.forEach((aluno) => {
-        // Encontra a posição verdadeira dele no ranking global
+        // Encontra a posição verdadeira dele no ranking global baseado no índice geral
         const posicaoOriginal = rankingGlobal.findIndex(a => a.nome === aluno.nome) + 1;
         
         let estiloPos = posicaoOriginal === 1 ? "top-1" : posicaoOriginal === 2 ? "top-2" : posicaoOriginal === 3 ? "top-3" : "";
@@ -117,9 +116,8 @@ const nomeDoUsuario = sessionStorage.getItem("nomeUsuario");
 if (btnVerTodos) {
     btnVerTodos.addEventListener("click", () => {
         rankingModal.classList.remove("hidden");
-        if (searchInput) searchInput.value = ""; // Limpa a barra de busca
-        
-        // Puxa e desenha a lista completa no pop-up
+        if (searchInput) searchInput.value = ""; 
+        // Puxa e desenha a lista COMPLETA no pop-up
         atualizarRanking(rankingGlobal, nomeDoUsuario, "full-ranking-list");
     });
 }
@@ -138,15 +136,16 @@ window.addEventListener("click", (e) => {
     }
 });
 
-// Pesquisa Instantânea no lado do Cliente (Muito leve)
+// Pesquisa Instantânea
 if (searchInput) {
     searchInput.addEventListener("input", (e) => {
         const termoBusca = e.target.value.toLowerCase(); 
         
-        // Filtra os alunos ignorando letras maiúsculas/minúsculas
+        // MUDANÇA AQUI: Filtra por nome, cargo ou XP
         const alunosFiltrados = rankingGlobal.filter(aluno => 
             aluno.nome.toLowerCase().includes(termoBusca) || 
-            aluno.cargo.toLowerCase().includes(termoBusca)
+            aluno.cargo.toLowerCase().includes(termoBusca) ||
+            aluno.xp.toString().includes(termoBusca)
         );
         
         atualizarRanking(alunosFiltrados, nomeDoUsuario, "full-ranking-list");

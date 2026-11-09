@@ -346,12 +346,12 @@ body {
 
 /* --- ESTILOS DO NOVO POP-UP (MODAL) --- */
 .ranking-content {
-    max-width: 550px; /* Aumentado levemente para respirar mais */
-    width: 90%;
-    max-height: 85vh; 
     display: flex;
     flex-direction: column;
-    padding: 30px; /* Mais espaço interno */
+    max-height: 85vh; /* O modal nunca passará de 85% da altura da tela */
+    padding: 25px;
+    width: 90%;
+    max-width: 500px;
 }
 
 /* --- LISTA COM SCROLL DENTRO DO MODAL --- */

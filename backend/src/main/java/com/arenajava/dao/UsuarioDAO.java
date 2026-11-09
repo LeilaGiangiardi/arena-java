@@ -18,7 +18,6 @@ public class UsuarioDAO {
 
             stmt.setString(1, usuario.getNome());
             stmt.setString(2, usuario.getEmail());
-            // CORREÇÃO: Trata a falta da coluna GitHub para não quebrar o insert
             stmt.setString(3, usuario.getGithub() != null ? usuario.getGithub() : "");
             stmt.setString(4, usuario.getSenhaHash());
 
@@ -53,7 +52,6 @@ public class UsuarioDAO {
                     usuario.setCargo(rs.getString("cargo"));
                     usuario.setCriadoEm(rs.getTimestamp("criado_em"));
 
-                    // Mapeia colunas do dashboard
                     usuario.setOfensiva(rs.getInt("ofensiva"));
                     usuario.setQuestoesAcertadas(rs.getInt("questoes_acertadas"));
                     usuario.setTotalQuestoes(rs.getInt("total_questoes"));
@@ -67,10 +65,12 @@ public class UsuarioDAO {
         return usuario;
     }
 
-    // Novo método para o Servlet puxar o Top 5
+    // Método mantido com este nome para não quebrar o Servlet, mas agora busca TODOS os usuários
     public java.util.List<Usuario> listarTop5Ranking() {
         java.util.List<Usuario> lista = new java.util.ArrayList<>();
-        String sql = "SELECT nome, cargo, xp FROM usuarios ORDER BY xp DESC LIMIT 5";
+        
+        // MUDANÇA AQUI: Sem LIMIT 5 e com desempate alfabético (nome ASC)
+        String sql = "SELECT nome, cargo, xp FROM usuarios ORDER BY xp DESC, nome ASC";
 
         try (Connection conexao = ConexaoJDBC.conectar();
                 PreparedStatement stmt = conexao.prepareStatement(sql);
