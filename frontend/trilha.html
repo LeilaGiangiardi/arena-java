@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arena Java - Seleção de Módulos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="dashboard-body">
+
+    <!-- Menu Lateral Principal -->
+    <aside class="sidebar">
+        <div class="sidebar-icon" title="Perfil"><i class="ph ph-user"></i></div>
+        <div class="sidebar-icon" title="Dashboard" onclick="window.location.href='dashboard.html'"><i class="ph ph-house"></i></div>
+        <div class="sidebar-icon active" title="Trilha de Módulos"><i class="ph ph-game-controller"></i></div>
+        <div class="sidebar-icon" title="Configurações"><i class="ph ph-gear"></i></div>
+        <div class="sidebar-icon logout-icon" title="Sair" onclick="window.location.href='index.html'">
+            <i class="ph ph-sign-out"></i>
+        </div>
+    </aside>
+
+    <main class="main-content" style="position: relative; overflow-x: hidden;">
+        <header class="top-header">
+            <h1 class="greeting">Sua Trilha de <span class="highlight-cyan">Missões</span></h1>
+            <div class="user-stats">
+                <span>Sua pontuação: 🏅 <strong id="user-xp">...</strong></span>
+            </div>
+        </header>
+
+        <!-- Biblioteca estilo Steam -->
+        <div class="modules-grid" id="modules-container">
+            <!-- Cards injetados via JS -->
+        </div>
+
+        <!-- Overlay escuro para quando o painel abrir -->
+        <div id="panel-overlay" class="panel-overlay hidden"></div>
+
+        <!-- Painel Flutuante do Módulo (O "Console") -->
+        <aside id="module-side-panel" class="module-side-panel closed">
+            <button id="btn-close-panel" class="btn-close-panel"><i class="ph ph-caret-right"></i></button>
+            
+            <div class="panel-header">
+                <span id="panel-status-badge" class="badge">STATUS</span>
+                <h2 id="panel-title">Nome do Módulo</h2>
+            </div>
+
+            <div class="panel-content">
+                <p id="panel-desc" class="panel-desc">Descrição do módulo e lore da missão.</p>
+                
+                <!-- Progresso estilo barra de HP de Chefão -->
+                <div class="boss-hp-container">
+                    <div class="hp-header">
+                        <span>Progresso da Missão</span>
+                        <span id="panel-progress-text">0/10</span>
+                    </div>
+                    <div class="timer-container">
+                        <div id="panel-progress-bar" class="timer-bar" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <div class="panel-rewards">
+                    <h3><i class="ph ph-treasure-chest"></i> Recompensas</h3>
+                    <p class="text-cyan">Conclusão: <strong id="panel-xp-bonus">50</strong> XP Bônus</p>
+                </div>
+
+                <!-- ALERTA DE CHEFÃO (Inspirado em consoles retrô) -->
+                <div class="boss-alert">
+                    <h3>⚠️ ALERTA DE AMEAÇA</h3>
+                    <p>Detectamos um pico de processamento no final deste setor. Prepare-se para enfrentar o <strong class="highlight-cyan">Chefão Final</strong> usando todos os conceitos aprendidos aqui. Seus blocos <code>try/catch</code> estão em dia?</p>
+                </div>
+            </div>
+
+            <div class="panel-footer">
+                <button id="btn-start-module" class="btn-run" style="width: 100%;">INICIAR MISSÃO</button>
+            </div>
+        </aside>
+    </main>
+
+    <script src="js/trilha.js"></script>
+</body>
+</html>

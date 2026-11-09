@@ -380,3 +380,149 @@ body {
 .full-ranking-list::-webkit-scrollbar-thumb:hover {
     background: #00ffff; /* Brilho neon ao passar o mouse */
 }
+
+/* ================= TELA DE MÓDULOS (STEAM STYLE) ================= */
+.modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 25px;
+    padding: 10px 0;
+}
+
+.module-card {
+    background-color: #15121e;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
+    height: 320px;
+    display: flex;
+    flex-direction: column;
+}
+
+.module-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(213, 0, 249, 0.3);
+    border-color: var(--cyan);
+}
+
+.module-card.locked {
+    filter: grayscale(80%) brightness(0.6);
+    pointer-events: auto; /* Permite clicar para ver o porquê está bloqueado */
+}
+
+.card-cover {
+    width: 100%;
+    height: 70%;
+    object-fit: cover;
+    border-bottom: 2px solid var(--magenta);
+}
+
+.card-info {
+    padding: 15px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-info h3 {
+    font-size: 1.1rem;
+    font-family: var(--font-code);
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+/* Overlays do Card (Cadeado e Check verde) */
+.card-overlay, .card-overlay-success {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 30%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(9, 10, 15, 0.7);
+    backdrop-filter: blur(4px);
+    color: var(--text-muted);
+    font-size: 3rem;
+}
+.card-overlay-success {
+    background: rgba(0, 255, 115, 0.1);
+    color: #00ff73;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.module-card.completed:hover .card-overlay-success {
+    opacity: 1;
+}
+
+/* ================= PAINEL LATERAL FLUTUANTE ================= */
+.panel-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(2px);
+    z-index: 10;
+    transition: opacity 0.3s;
+}
+
+.module-side-panel {
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 400px;
+    background: #110e19;
+    border-left: 1px solid var(--cyan);
+    box-shadow: -10px 0 30px rgba(0, 240, 255, 0.1);
+    z-index: 20;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(0);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.module-side-panel.closed {
+    transform: translateX(110%);
+}
+
+.btn-close-panel {
+    position: absolute;
+    top: 20px; left: -20px;
+    width: 40px; height: 40px;
+    background: var(--cyan);
+    border: none;
+    border-radius: 50%;
+    color: #000;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 0 15px var(--cyan);
+    display: flex; align-items: center; justify-content: center;
+}
+
+.panel-header { margin-bottom: 25px; }
+.panel-header h2 { font-size: 1.8rem; margin-top: 10px; font-family: var(--font-code); color: #fff;}
+.panel-desc { color: var(--text-muted); line-height: 1.6; margin-bottom: 25px; }
+
+/* HP do Chefão / Progresso */
+.boss-hp-container { margin-bottom: 25px; }
+.hp-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px; font-size: 0.9rem; }
+
+/* Alerta Retrô */
+.boss-alert {
+    background: rgba(255, 23, 68, 0.05);
+    border: 1px solid rgba(255, 23, 68, 0.3);
+    border-left: 4px solid var(--pink);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: auto;
+    margin-bottom: 25px;
+}
+.boss-alert h3 { color: var(--pink); font-size: 1rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.boss-alert p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+
+.panel-footer { margin-top: auto; }
+.bg-red { background-color: rgba(255, 23, 68, 0.2); color: var(--pink); border: 1px solid var(--pink); }
+.bg-green { background-color: rgba(0, 255, 115, 0.2); color: #00ff73; border: 1px solid #00ff73; }

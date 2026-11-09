@@ -1,16 +1,15 @@
 -- ==============================================================================
 -- SCRIPT DE INICIALIZAÇÃO DO BANCO DE DADOS - ARENA JAVA
--- Banco: PostgreSQL
 -- ==============================================================================
 
--- 1. Remoção das tabelas caso já existam (CASCADE evita erros de dependência)
+-- 1. Remoção das tabelas caso já existam
 DROP TABLE IF EXISTS modulos_concluidos CASCADE;
 DROP TABLE IF EXISTS respostas_usuarios CASCADE;
 DROP TABLE IF EXISTS perguntas CASCADE;
 DROP TABLE IF EXISTS modulos CASCADE;
 DROP TABLE IF EXISTS usuarios CASCADE;
 
--- 2. Tabela de Usuários (Com campos de Gamificação do Dashboard)
+-- 2. Tabela de Usuários
 CREATE TABLE usuarios (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
@@ -26,7 +25,7 @@ CREATE TABLE usuarios (
     dominio VARCHAR(50) DEFAULT 'Nenhum'
 );
 
--- 3. Tabela de Módulos (Trilhas de aprendizado e Bônus de conclusão)
+-- 3. Tabela de Módulos 
 CREATE TABLE modulos (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
@@ -34,7 +33,7 @@ CREATE TABLE modulos (
     xp_bonus_conclusao INT DEFAULT 50
 );
 
--- 4. Tabela de Perguntas (Base de questões dos Quizzes)
+-- 4. Tabela de Perguntas 
 CREATE TABLE perguntas (
     id SERIAL PRIMARY KEY,
     modulo_id INT REFERENCES modulos(id) ON DELETE CASCADE,
@@ -48,12 +47,12 @@ CREATE TABLE perguntas (
     feedback_erro TEXT,
     xp_recompensa INT DEFAULT 10,
     nivel INT DEFAULT 1,
-    tipo_pergunta INT DEFAULT 1, -- 1: Marcar, 2: Aberta, 3: Código IDE
+    tipo_pergunta INT DEFAULT 1, 
     validacao_regex VARCHAR(255),
     testes_unitarios_ocultos TEXT
 );
 
--- 5. Tabela de Respostas (Histórico de acertos/erros dos alunos)
+-- 5. Tabela de Respostas 
 CREATE TABLE respostas_usuarios (
     id SERIAL PRIMARY KEY,
     usuario_id INT REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -62,11 +61,12 @@ CREATE TABLE respostas_usuarios (
     respondido_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 6. Tabela de Módulos Concluídos (Para não duplicar prêmios de XP)
+-- 6. Tabela de Módulos Concluídos 
 CREATE TABLE modulos_concluidos (
     usuario_id INT REFERENCES usuarios(id) ON DELETE CASCADE,
     modulo_id INT REFERENCES modulos(id) ON DELETE CASCADE,
     concluido_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (usuario_id, modulo_id)
 );
+
 
