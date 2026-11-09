@@ -89,32 +89,62 @@ public class UsuarioDAO {
         return lista;
     }
 
-    public boolean registrarRespostaQuestao(String email, int xpGanho, String novoCargo, boolean acertou) {
-        int valorAcerto = acertou ? 1 : 0;
-        
-        // A mágica da ofensiva: se a última atividade for NULA ou menor que HOJE, soma +1 dia na ofensiva.
-        String sql = "UPDATE usuarios SET " +
-                     "xp = xp + ?, " +
-                     "cargo = ?, " +
-                     "questoes_acertadas = questoes_acertadas + ?, " +
-                     "total_questoes = total_questoes + 1, " +
-                     "ofensiva = CASE WHEN ultima_atividade < CURRENT_DATE OR ultima_atividade IS NULL THEN ofensiva + 1 ELSE ofensiva END, " +
-                     "ultima_atividade = CURRENT_DATE " +
-                     "WHERE email = ?";
-        
-        try (Connection conn = ConexaoJDBC.conectar();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+    public String registrarRespostaQuestao(String email, int perguntaId, int xpGanho, String novoCargo, boolean acertou) {
+        String sqlUsuarioId = "SELECT id FROM usuarios WHERE email = ?";
+        String sqlInsertResposta = "INSERT INTO respostas_usuarios (usuario_id, pergunta_id, acertou) VALUES (?, ?, ?)";
+        String sqlUpdateXP = "UPDATE usuarios SET " +
+                             "xp = xp + ?, cargo = ?, " +
+                             "questoes_acertadas = questoes_acertadas + ?, " +
+                             "total_questoes = total_questoes + 1, " +
+                             "ofensiva = CASE WHEN ultima_atividade < CURRENT_DATE OR ultima_atividade IS NULL THEN ofensiva + 1 ELSE ofensiva END, " +
+                             "ultima_atividade = CURRENT_DATE " +
+                             "WHERE id = ?";
 
-            stmt.setInt(1, xpGanho);
-            stmt.setString(2, novoCargo);
-            stmt.setInt(3, valorAcerto);
-            stmt.setString(4, email);
+        try (Connection conn = ConexaoJDBC.conectar()) {
+            // 1. Busca o ID numérico do usuário através do e-mail
+            int usuarioId = -1;
+            try (PreparedStatement stmtBusca = conn.prepareStatement(sqlUsuarioId)) {
+                stmtBusca.setString(1, email);
+                try (ResultSet rs = stmtBusca.executeQuery()) {
+                    if (rs.next()) usuarioId = rs.getInt("id");
+                }
+            }
             
-            return stmt.executeUpdate() > 0;
+            if (usuarioId == -1) return "ERRO";
+
+            // Inicia a Transação (só salva se tudo der certo)
+            conn.setAutoCommit(false);
+
+            // 2. Tenta inserir na tabela de histórico
+            try (PreparedStatement stmtInsert = conn.prepareStatement(sqlInsertResposta)) {
+                stmtInsert.setInt(1, usuarioId);
+                stmtInsert.setInt(2, perguntaId);
+                stmtInsert.setBoolean(3, acertou);
+                stmtInsert.executeUpdate();
+            } catch (SQLException e) {
+                conn.rollback(); // Cancela tudo
+                // Código 23505 no Postgres significa "Unique Violation" (Já respondeu!)
+                if (e.getSQLState() != null && e.getSQLState().equals("23505")) {
+                    return "DUPLICADO"; 
+                }
+                return "ERRO";
+            }
+
+            // 3. Atualiza os atributos do Usuário
+            try (PreparedStatement stmtUpdate = conn.prepareStatement(sqlUpdateXP)) {
+                stmtUpdate.setInt(1, xpGanho);
+                stmtUpdate.setString(2, novoCargo);
+                stmtUpdate.setInt(3, acertou ? 1 : 0);
+                stmtUpdate.setInt(4, usuarioId);
+                stmtUpdate.executeUpdate();
+            }
+
+            conn.commit(); // Confirma as alterações no banco
+            return "SUCESSO";
+
         } catch (Exception e) {
-            System.err.println("Erro ao registrar resposta em tempo real:");
             e.printStackTrace();
-            return false;
+            return "ERRO";
         }
     }
 }

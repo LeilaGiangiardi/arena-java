@@ -526,3 +526,42 @@ body {
 .panel-footer { margin-top: auto; }
 .bg-red { background-color: rgba(255, 23, 68, 0.2); color: var(--pink); border: 1px solid var(--pink); }
 .bg-green { background-color: rgba(0, 255, 115, 0.2); color: #00ff73; border: 1px solid #00ff73; }
+
+/* ================= NOVO: CORES UTILITÁRIAS ================= */
+.text-green-light {
+    color: #00ffaa;
+}
+
+/* ================= BOTÕES DE OPÇÕES DO QUIZ ================= */
+.options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Duas colunas */
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.option-btn {
+    background-color: #1e1b29;
+    border: 2px solid transparent;
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: left;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    font-family: var(--font-ui);
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Dá um espacinho entre o >_ e o texto */
+}
+
+.option-btn:hover {
+    background-color: #2a2538;
+}
+
+.option-btn.selected {
+    border-color: var(--cyan);
+    background-color: rgba(0, 240, 255, 0.1);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); /* Brilho cyberpunk ao clicar */
+}

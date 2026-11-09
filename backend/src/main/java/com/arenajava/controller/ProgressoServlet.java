@@ -39,6 +39,7 @@ public class ProgressoServlet extends HttpServlet {
             JsonObject jsonReq = gson.fromJson(reader, JsonObject.class);
             
             String email = jsonReq.get("email").getAsString();
+            int perguntaId = jsonReq.get("perguntaId").getAsInt(); // NOVO: Puxa o ID da Pergunta
             int xpGanhoNaQuestao = jsonReq.get("xpGanho").getAsInt();
             boolean acertou = jsonReq.get("acertou").getAsBoolean();
             
@@ -49,18 +50,24 @@ public class ProgressoServlet extends HttpServlet {
                 return;
             }
 
-            // Calcula a evolução baseada no XP que ele já tem + XP dessa questão
             int xpTotalFuturo = usuario.getXp() + xpGanhoNaQuestao;
             String novoCargo = calcularCargo(xpTotalFuturo);
             boolean subiuDeNivel = !novoCargo.equals(usuario.getCargo());
             
-            // Dispara a gravação no banco
-            boolean sucesso = dao.registrarRespostaQuestao(email, xpGanhoNaQuestao, novoCargo, acertou);
+            // Verifica no banco
+            String resultado = dao.registrarRespostaQuestao(email, perguntaId, xpGanhoNaQuestao, novoCargo, acertou);
             
-            jsonResp.addProperty("sucesso", sucesso);
-            jsonResp.addProperty("novoXp", xpTotalFuturo);
-            jsonResp.addProperty("novoCargo", novoCargo);
-            jsonResp.addProperty("subiuDeNivel", subiuDeNivel);
+            if ("SUCESSO".equals(resultado)) {
+                jsonResp.addProperty("sucesso", true);
+                jsonResp.addProperty("novoXp", xpTotalFuturo);
+                jsonResp.addProperty("novoCargo", novoCargo);
+                jsonResp.addProperty("subiuDeNivel", subiuDeNivel);
+            } else if ("DUPLICADO".equals(resultado)) {
+                jsonResp.addProperty("sucesso", false);
+                jsonResp.addProperty("jaRespondida", true);
+            } else {
+                jsonResp.addProperty("sucesso", false);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -70,13 +77,12 @@ public class ProgressoServlet extends HttpServlet {
         resp.getWriter().write(jsonResp.toString());
     }
 
-    // Tabela de XP oficial
     private String calcularCargo(int xpTotal) {
-        if (xpTotal >= 1200) return "Compilador Humano 🧠";
-        if (xpTotal >= 900) return "Mestre do Stack Overflow 🧙‍♂️";
-        if (xpTotal >= 600) return "Refém da I.A. 🤖";
-        if (xpTotal >= 300) return "Caçador de Ponto e Vírgula (;) 🔍";
-        if (xpTotal >= 100) return "Derrubador de Servidor 💥";
-        return "Criador de bugs 🐛";
+        if (xpTotal >= 5000) return "Compilador Humano 🧠";
+        if (xpTotal >= 3000) return "Mestre do Stack Overflow 🧙‍♂️";
+        if (xpTotal >= 1500) return "Refém da Inteligência Artificial 🤖";
+        if (xpTotal >= 500) return "Caçador de Ponto e Vírgula (;) 🔍";
+        if (xpTotal >= 200) return "Criador de bugs 🐛";
+        return "Derrubador de Servidor 💥";
     }
 }

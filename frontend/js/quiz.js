@@ -1,20 +1,42 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const moduloId = urlParams.get('id') || 1; 
-    
-    const API_URL = `http://localhost:8080/backend/api/quiz?moduloId=${moduloId}`;
-    const PROGRESSO_URL = 'http://localhost:8080/backend/api/progresso';
+    // 1. CAPTURA SEGURA DA SESSÃO E URL
     const emailDoJogador = sessionStorage.getItem("emailUsuario");
+    const urlParams = new URLSearchParams(window.location.search);
+    const moduloId = urlParams.get('moduloId'); // Correção do bug 'id' para 'moduloId'
 
-    // Validação Segura de UI
+    if (!emailDoJogador || !moduloId) {
+        alert("Sessão inválida ou módulo não selecionado!");
+        window.location.href = "trilha.html";
+        return;
+    }
+
+    // A URL agora é montada CORRETAMENTE com as variáveis já preenchidas
+    const API_URL = `http://localhost:8080/backend/api/quiz?moduloId=${moduloId}&email=${emailDoJogador}`;
+    const PROGRESSO_URL = 'http://localhost:8080/backend/api/progresso';
+
+    // 2. ELEMENTOS DA TELA
     const elNome = document.getElementById("user-nome");
-    const elCargo = document.getElementById("user-cargo");
-    const elXp = document.getElementById("user-xp");
-
     if (elNome) elNome.innerText = sessionStorage.getItem("nomeUsuario") || "Anônimo";
+
+    const elCargo = document.getElementById("user-cargo");
     if (elCargo) elCargo.innerText = sessionStorage.getItem("cargoUsuario") || "Recruta";
+
+    const elXp = document.getElementById("user-xp");
     if (elXp) elXp.innerText = sessionStorage.getItem("xpUsuario") || "0";
 
+    const questionText = document.getElementById("question-text");
+    const codeSnippet = document.getElementById("code-snippet");
+    const answerArea = document.getElementById("answer-area");
+    const btnConfirm = document.getElementById("btn-confirm");
+    const questionCounter = document.getElementById("question-counter");
+    const xpReward = document.getElementById("xp-reward");
+    const timerBar = document.getElementById("timer-bar");
+
+    const feedbackModal = document.getElementById("feedback-modal");
+    const btnNextQuestion = document.getElementById("btn-next-question");
+    const btnCloseQuiz = document.getElementById("btn-close-quiz");
+
+    // Variáveis de Estado
     let questions = [];
     let currentIndex = 0;
     let timerInterval;
@@ -25,62 +47,45 @@ document.addEventListener("DOMContentLoaded", () => {
     let missedTopics = [];
     let selectedAnswer = null;
 
-    const questionText = document.getElementById("question-text");
-    const codeSnippet = document.getElementById("code-snippet");
-    const answerArea = document.getElementById("answer-area");
-    const btnConfirm = document.getElementById("btn-confirm");
-    const questionCounter = document.getElementById("question-counter");
-    const xpReward = document.getElementById("xp-reward");
-    const timerBar = document.getElementById("timer-bar");
-    const feedbackModal = document.getElementById("feedback-modal");
-    const btnNextQuestion = document.getElementById("btn-next-question");
-    const btnCloseQuiz = document.getElementById("btn-close-quiz");
-
-    const saveKey = `arena_progresso_mod_${moduloId}_${emailDoJogador}`;
-
-    function checarProgressoSalvo() {
-        const progressoSalvo = localStorage.getItem(saveKey);
-        if (progressoSalvo) {
-            const confirmed = confirm("Você tem um progresso salvo. Deseja continuar de onde parou?");
-            if (confirmed) {
-                const state = JSON.parse(progressoSalvo);
-                currentIndex = state.currentIndex;
-                earnedXP = state.earnedXP;
-                correctCount = state.correctCount;
-                errorCount = state.errorCount;
-                missedTopics = state.missedTopics;
-            } else {
-                localStorage.removeItem(saveKey);
-            }
-        }
-        renderQuestion();
-    }
-
     if (btnCloseQuiz) {
         btnCloseQuiz.addEventListener("click", () => {
-            clearInterval(timerInterval);
-            if (questions.length > 0) {
-                const action = confirm("Seus pontos já estão a salvo no servidor! Deseja salvar também a posição desta pergunta para continuar depois?\n\n[OK] Salva a posição\n[Cancelar] Sai e descarta a posição");
-                if (action) {
-                    const state = { currentIndex, earnedXP, correctCount, errorCount, missedTopics };
-                    localStorage.setItem(saveKey, JSON.stringify(state));
-                } else {
-                    localStorage.removeItem(saveKey);
-                }
-            }
             window.location.href = "trilha.html";
         });
     }
 
+    // 3. BUSCA AS PERGUNTAS NO SERVIDOR (A VERDADE ABSOLUTA)
     fetch(API_URL)
-        .then(response => response.json())
-        .then(data => {
-            questions = data;
-            if(questions.length > 0) checarProgressoSalvo();
-            else questionText.innerText = "Nenhuma pergunta encontrada para este módulo.";
+        .then(response => {
+            if (!response.ok) throw new Error("Erro na rede.");
+            return response.json();
         })
-        .catch(error => console.error(error));
+        .then(data => {
+            if (data.erro) {
+                questionText.innerText = "Erro: " + data.erro;
+                return;
+            }
+            questions = data;
 
+            if (questions.length > 0) {
+                // TRAVA ANTIFRAUDE: Conta quantas já estão respondidas e pula elas
+                let respondidasNoBanco = questions.filter(q => q.jaRespondida === true).length;
+                currentIndex = respondidasNoBanco;
+
+                if (currentIndex >= questions.length) {
+                    mostrarResumoFinal(); // Se o cara limpou o cache mas já tinha feito tudo, cai aqui direto!
+                } else {
+                    renderQuestion(); // Renderiza a primeira inédita
+                }
+            } else {
+                questionText.innerText = "Nenhuma pergunta encontrada para este módulo.";
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            questionText.innerText = "Falha de Conexão com o Servidor Java.";
+        });
+
+    // 4. RENDERIZA A PERGUNTA
     function renderQuestion() {
         const q = questions[currentIndex];
         questionCounter.innerText = `Pergunta ${currentIndex + 1}/${questions.length}`;
@@ -88,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
         questionText.innerText = q.enunciado;
 
         if (q.codigoSnippet) {
-            codeSnippet.innerHTML = `<code>${q.codigoSnippet}</code>`;
+            codeSnippet.innerHTML = `<code>${q.codigoSnippet.replace(/\n/g, '<br>').replace(/ /g, '&nbsp;')}</code>`;
             codeSnippet.classList.remove("hidden");
         } else {
             codeSnippet.classList.add("hidden");
@@ -96,11 +101,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         answerArea.innerHTML = ""; 
         selectedAnswer = null;
-        btnConfirm.disabled = true;
+        
+        btnConfirm.classList.remove("active");
+        btnConfirm.disabled = true; // <-- TRANCA O BOTÃO NO INÍCIO DA PERGUNTA
 
         if (q.tipoPergunta === 1) {
             const grid = document.createElement("div");
-            grid.className = "alternatives-grid";
+            grid.className = "options-grid";
             const options = [
                 { id: 'A', text: q.opcaoA }, { id: 'B', text: q.opcaoB },
                 { id: 'C', text: q.opcaoC }, { id: 'D', text: q.opcaoD }
@@ -108,51 +115,48 @@ document.addEventListener("DOMContentLoaded", () => {
             options.forEach(opt => {
                 if (opt.text) {
                     const btn = document.createElement("button");
-                    btn.className = "btn-alt";
-                    btn.innerText = `${opt.id}) ${opt.text}`;
+                    btn.className = "option-btn";
+                    btn.innerHTML = `<span class="text-cyan">>_</span> ${opt.id}) ${opt.text}`;
                     btn.onclick = () => selectOption(btn, opt.id);
                     grid.appendChild(btn);
                 }
             });
             answerArea.appendChild(grid);
-            btnConfirm.innerText = "Confirmar Resposta";
         }
-        else if (q.tipoPergunta === 2) {
+        else if (q.tipoPergunta === 2 || q.tipoPergunta === 3) {
             const input = document.createElement("input");
             input.type = "text";
             input.className = "ide-input";
-            input.placeholder = "Sua resposta...";
+            input.placeholder = q.tipoPergunta === 2 ? "Ex: sc.nextInt();" : "// Seu código...";
             input.oninput = (e) => {
                 selectedAnswer = e.target.value;
-                btnConfirm.disabled = selectedAnswer.trim() === "";
+                if (selectedAnswer.trim() !== "") {
+                    btnConfirm.classList.add("active");
+                    btnConfirm.disabled = false; // <-- DESTRANCA AO DIGITAR
+                } else {
+                    btnConfirm.classList.remove("active");
+                    btnConfirm.disabled = true; // <-- TRANCA SE APAGAR TUDO
+                }
             };
             answerArea.appendChild(input);
-            btnConfirm.innerText = "Confirmar Resposta";
-        }
-        else if (q.tipoPergunta === 3) {
-            const textarea = document.createElement("textarea");
-            textarea.className = "ide-input";
-            textarea.placeholder = "// Digite seu código Java aqui";
-            textarea.oninput = (e) => {
-                selectedAnswer = e.target.value;
-                btnConfirm.disabled = selectedAnswer.trim() === "";
-            };
-            answerArea.appendChild(textarea);
-            btnConfirm.innerText = "▶ Run Code";
         }
         startTimer();
     }
 
+    // Seleção Visual de Alternativa
     function selectOption(btnElement, optionId) {
-        document.querySelectorAll(".btn-alt").forEach(b => b.classList.remove("selected"));
+        document.querySelectorAll(".option-btn").forEach(b => b.classList.remove("selected"));
         btnElement.classList.add("selected");
         selectedAnswer = optionId;
-        btnConfirm.disabled = false;
+        
+        btnConfirm.classList.add("active");
+        btnConfirm.disabled = false; // <-- ISSO DESTRANCA O CLIQUE!
     }
 
+    // Cronômetro
     function startTimer() {
         clearInterval(timerInterval);
-        timeLeft = 45; 
+        timeLeft = 45;
         timerBar.style.width = "100%";
         timerBar.classList.remove("danger");
 
@@ -162,75 +166,81 @@ document.addEventListener("DOMContentLoaded", () => {
             if (timeLeft <= 10) timerBar.classList.add("danger");
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
-                checkAnswer(true); 
+                processarResposta(true); // Estourou o tempo
             }
         }, 1000);
     }
 
-    btnConfirm.addEventListener("click", () => checkAnswer(false));
+    // 5. ENVIO E VALIDAÇÃO DA RESPOSTA
+    btnConfirm.addEventListener("click", () => {
+        if (btnConfirm.classList.contains("active")) {
+            processarResposta(false);
+        }
+    });
 
-    // A MÁGICA EM TEMPO REAL ACONTECE AQUI
-    function checkAnswer(timeOut = false) {
+    function processarResposta(timeOut = false) {
         clearInterval(timerInterval);
+        btnConfirm.classList.remove("active"); // Trava duplo clique
+        btnConfirm.disabled = true;
+        
         const q = questions[currentIndex];
         let isCorrect = false;
 
-        if (timeOut) {
-            isCorrect = false;
-        } else if (q.tipoPergunta === 1) {
-            isCorrect = (selectedAnswer === q.respostaCorreta);
-        } else if (q.tipoPergunta === 2) {
-            let padrao = q.validacaoRegex;
-            let flags = padrao.startsWith("(?i)") ? "i" : "";
-            padrao = padrao.replace("(?i)", "");
-            const regex = new RegExp(padrao, flags);
-            isCorrect = regex.test(selectedAnswer || "");
-        } else if (q.tipoPergunta === 3) {
-            isCorrect = selectedAnswer.includes("System.out.println") && selectedAnswer.includes("Arena Java");
+        // Validação Front-end
+        if (!timeOut) {
+            if (q.tipoPergunta === 1) {
+                isCorrect = (selectedAnswer === q.respostaCorreta);
+            } else if (q.tipoPergunta === 2 || q.tipoPergunta === 3) {
+                let padrao = q.validacaoRegex || "";
+                let flags = padrao.startsWith("(?i)") ? "i" : "";
+                padrao = padrao.replace("(?i)", "");
+                const regex = new RegExp(padrao, flags);
+                isCorrect = regex.test(selectedAnswer || "");
+            }
         }
 
         const xpDaQuestao = isCorrect ? q.xpRecompensa : 0;
 
-        // BATE NO JAVA NA HORA QUE O USUÁRIO CLICA EM CONFIRMAR
+        // Manda o resultado para o Java salvar no Banco
         fetch(PROGRESSO_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                email: emailDoJogador, 
-                xpGanho: xpDaQuestao, 
-                acertou: isCorrect 
+            body: JSON.stringify({
+                email: emailDoJogador,
+                perguntaId: q.id,
+                xpGanho: xpDaQuestao,
+                acertou: isCorrect
             })
         })
-        .then(res => res.json())
-        .then(data => {
-            if (data.sucesso) {
-                // Atualiza o visual no topo da tela instantaneamente
-                sessionStorage.setItem("xpUsuario", data.novoXp);
-                sessionStorage.setItem("cargoUsuario", data.novoCargo);
-                if (elXp) elXp.innerText = data.novoXp;
-                if (elCargo) elCargo.innerText = data.novoCargo;
+            .then(res => res.json())
+            .then(data => {
+                if (data.sucesso) {
+                    if (isCorrect) {
+                        earnedXP += xpDaQuestao;
+                        correctCount++;
+                    } else {
+                        errorCount++;
+                        if (q.tipoPergunta === 1) missedTopics.push("Teoria e conceitos básicos");
+                        else missedTopics.push("Sintaxe de Código e Regex");
+                    }
 
-                // Mostra alerta de Promoção no meio do jogo se ele upar!
-                if (data.subiuDeNivel) {
-                    alert(`🎉 PROMOÇÃO! Seus acertos te elevaram ao cargo de: ${data.novoCargo}`);
+                    // Atualiza a tela com as informações novas do Banco
+                    sessionStorage.setItem("xpUsuario", data.novoXp);
+                    sessionStorage.setItem("cargoUsuario", data.novoCargo);
+                    document.getElementById("user-xp").innerText = data.novoXp;
+                    document.getElementById("user-cargo").innerText = data.novoCargo;
                 }
-            }
-        });
 
-        // Contadores locais para exibir no final
-        if (isCorrect) {
-            earnedXP += xpDaQuestao;
-            correctCount++;
-        } else {
-            errorCount++;
-            if (q.tipoPergunta === 1) missedTopics.push("Teoria e conceitos básicos");
-            else if (q.tipoPergunta === 2) missedTopics.push("Lembrar do vocabulário exato");
-            else if (q.tipoPergunta === 3) missedTopics.push("Prática de Código");
-        }
-
-        showFeedback(isCorrect, q.feedbackErro, xpDaQuestao);
+                // Abre o feedback independente da resposta do servidor
+                showFeedback(isCorrect, q.feedbackErro, xpDaQuestao);
+            })
+            .catch(err => {
+                console.error("Erro ao salvar progresso:", err);
+                showFeedback(isCorrect, q.feedbackErro, xpDaQuestao); // Mostra o modal mesmo offline
+            });
     }
 
+    // Modal de Explicação
     function showFeedback(isCorrect, explanation, xp) {
         feedbackModal.classList.remove("hidden");
         const modalContent = feedbackModal.querySelector(".modal-content");
@@ -238,49 +248,73 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (isCorrect) {
             modalContent.classList.add("success");
-            document.getElementById("feedback-title").innerText = "Correto! 🚀";
-            document.getElementById("feedback-title").style.color = "#00ff73";
-            document.getElementById("feedback-explanation").innerText = explanation || `XP adicionado direto na sua conta!`;
+            document.getElementById("feedback-title").innerHTML = `✔️ ACERTOU! <span class="text-cyan fira-code">+${xp}XP</span>`;
+            document.getElementById("feedback-title").style.color = "#00ffaa";
+            document.getElementById("feedback-explanation").innerHTML = `Excelente lógica de compilação. Avançando para a próxima instrução...`;
         } else {
             modalContent.classList.add("error");
-            document.getElementById("feedback-title").innerText = "Bug Encontrado! 🐛";
-            document.getElementById("feedback-title").style.color = "#ff1744";
-            document.getElementById("feedback-explanation").innerText = explanation;
+            document.getElementById("feedback-title").innerText = "🐛 EXCEPTION ENCONTRADA!";
+            document.getElementById("feedback-title").style.color = "#ff3366";
+            document.getElementById("feedback-explanation").innerHTML = explanation || "Você errou a sintaxe.";
         }
     }
 
-    // Como o Banco já salvou, o botão "Próximo" só avança a tela
+    // 6. AVANÇAR E CONCLUIR
     btnNextQuestion.addEventListener("click", () => {
         feedbackModal.classList.add("hidden");
-        currentIndex++;
+        currentIndex++; // Avança no Array carregado
 
         if (currentIndex < questions.length) {
             renderQuestion();
         } else {
-            localStorage.removeItem(saveKey); // Limpa o save
-            document.querySelector(".quiz-card").classList.add("hidden");
-            
-            const summary = document.getElementById("summary-section");
-            summary.classList.remove("hidden");
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            mostrarResumoFinal();
+        }
+    });
 
-            document.getElementById("final-xp").innerText = "+ " + earnedXP;
-            document.getElementById("final-correct").innerText = correctCount;
-            document.getElementById("final-errors").innerText = errorCount;
+    function mostrarResumoFinal() {
+        // Agora o elemento existe no HTML, então isso funcionará
+        document.getElementById("active-quiz-section").classList.add("hidden");
+        const summary = document.getElementById("summary-section");
+        summary.classList.remove("hidden");
 
-            const ul = document.getElementById("improvement-list");
-            ul.innerHTML = ""; 
-            if (errorCount === 0) {
-                ul.innerHTML = "<li style='color: #00ff73;'>✨ Código impecável! Você dominou o assunto!</li>";
-                // Bônus visual de perfect
-                if (document.getElementById("bonus-box")) document.getElementById("bonus-box").classList.remove("hidden");
-            } else {
-                const uniqueTopics = [...new Set(missedTopics)];
-                uniqueTopics.forEach(topic => {
-                    const li = document.createElement("li");
-                    li.innerText = "⚠️ Revise: " + topic;
-                    ul.appendChild(li);
-                });
+        document.getElementById("final-xp").innerText = "+ " + earnedXP;
+        document.getElementById("final-correct").innerText = correctCount;
+        document.getElementById("final-errors").innerText = errorCount;
+
+        const ul = document.getElementById("improvement-list");
+        ul.innerHTML = "";
+        if (errorCount === 0) {
+            // Substituída a injeção de estilo inline (style) por uma classe CSS (.text-green-light)
+            ul.innerHTML = "<li class='text-green-light'>✨ Código impecável! Nenhuma anomalia detectada.</li>";
+        } else {
+            const uniqueTopics = [...new Set(missedTopics)];
+            uniqueTopics.forEach(topic => {
+                ul.innerHTML += `<li>⚠️ Área de atenção: <strong class="text-pink">${topic}</strong></li>`;
+            });
+        }
+    }
+
+    // 7. ATALHOS DE TECLADO (1 a 4 e Enter)
+    document.addEventListener('keydown', function (event) {
+        if (!document.getElementById("active-quiz-section").classList.contains("hidden") && feedbackModal.classList.contains("hidden")) {
+            // Teclas 1, 2, 3, 4
+            if (['1', '2', '3', '4'].includes(event.key)) {
+                const index = parseInt(event.key) - 1;
+                const options = document.querySelectorAll('.option-btn');
+                if (options[index]) {
+                    options[index].click();
+                }
+            }
+            // Enter para confirmar
+            if (event.key === 'Enter') {
+                if (btnConfirm.classList.contains('active')) {
+                    btnConfirm.click();
+                }
+            }
+        } else if (!feedbackModal.classList.contains("hidden")) {
+            // Enter para avançar o modal
+            if (event.key === 'Enter') {
+                btnNextQuestion.click();
             }
         }
     });

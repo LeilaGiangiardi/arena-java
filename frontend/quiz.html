@@ -1,20 +1,25 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arena Java - Quiz</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Inter:wght@400;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
+
 <body class="dashboard-body">
 
     <!-- Menu Lateral -->
     <aside class="sidebar">
         <div class="sidebar-icon" title="Perfil"><i class="ph ph-user"></i></div>
-        <div class="sidebar-icon" title="Dashboard" onclick="window.location.href='dashboard.html'"><i class="ph ph-house"></i></div>
-        <div class="sidebar-icon active" title="Trilha de Módulos" onclick="window.location.href='trilha.html'"><i class="ph ph-game-controller"></i></div>
+        <div class="sidebar-icon" title="Dashboard" onclick="window.location.href='dashboard.html'"><i
+                class="ph ph-house"></i></div>
+        <div class="sidebar-icon active" title="Trilha de Módulos" onclick="window.location.href='trilha.html'"><i
+                class="ph ph-game-controller"></i></div>
         <div class="sidebar-icon" title="Configurações"><i class="ph ph-gear"></i></div>
         <div class="sidebar-icon logout-icon" title="Sair" onclick="window.location.href='index.html'">
             <i class="ph ph-sign-out"></i>
@@ -26,11 +31,11 @@
         <!-- Cabeçalho com Dados Reais -->
         <header class="top-header">
             <h1 class="greeting">Desafio em Andamento 🚀</h1>
-            
+
             <div class="user-stats">
                 <span>Sua pontuação: 🏅 <strong id="user-xp">Carregando...</strong></span>
                 <span>Seu Ranking: <strong class="ranking-title" id="user-cargo">Carregando...</strong></span>
-                
+
                 <button id="btn-close-quiz" class="btn-close" title="Pausar ou Abandonar">
                     <i class="ph ph-x"></i>
                 </button>
@@ -38,7 +43,7 @@
         </header>
 
         <!-- Container do Quiz -->
-        <section class="quiz-card">
+        <section id="active-quiz-section" class="quiz-card">
             <div class="quiz-header">
                 <span id="question-counter" class="badge">Carregando...</span>
                 <span id="xp-reward" class="badge xp-badge">+ 0 XP</span>
@@ -73,7 +78,8 @@
                 <span class="level-icon">🎉</span>
                 <div class="level-text">
                     <h3>Promoção de Cargo!</h3>
-                    <p>Excelente trabalho! Você evoluiu para: <strong id="new-rank" class="highlight-cyan">...</strong></p>
+                    <p>Excelente trabalho! Você evoluiu para: <strong id="new-rank" class="highlight-cyan">...</strong>
+                    </p>
                 </div>
             </div>
 
@@ -120,4 +126,5 @@
 
     <script src="js/quiz.js"></script>
 </body>
+
 </html>
