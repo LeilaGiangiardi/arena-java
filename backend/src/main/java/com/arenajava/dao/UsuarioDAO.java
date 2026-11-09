@@ -88,4 +88,33 @@ public class UsuarioDAO {
         }
         return lista;
     }
+
+    public boolean registrarRespostaQuestao(String email, int xpGanho, String novoCargo, boolean acertou) {
+        int valorAcerto = acertou ? 1 : 0;
+        
+        // A mágica da ofensiva: se a última atividade for NULA ou menor que HOJE, soma +1 dia na ofensiva.
+        String sql = "UPDATE usuarios SET " +
+                     "xp = xp + ?, " +
+                     "cargo = ?, " +
+                     "questoes_acertadas = questoes_acertadas + ?, " +
+                     "total_questoes = total_questoes + 1, " +
+                     "ofensiva = CASE WHEN ultima_atividade < CURRENT_DATE OR ultima_atividade IS NULL THEN ofensiva + 1 ELSE ofensiva END, " +
+                     "ultima_atividade = CURRENT_DATE " +
+                     "WHERE email = ?";
+        
+        try (Connection conn = ConexaoJDBC.conectar();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, xpGanho);
+            stmt.setString(2, novoCargo);
+            stmt.setInt(3, valorAcerto);
+            stmt.setString(4, email);
+            
+            return stmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Erro ao registrar resposta em tempo real:");
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
