@@ -1,12 +1,15 @@
 package com.arenajava.util;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class ConexaoJDBC {
 
-    public static Connection conectar() throws SQLException {
+    private static final HikariDataSource dataSource;
+
+    static {
         try {
             Class.forName("org.postgresql.Driver");
             String url = System.getenv("DB_URL") != null 
@@ -19,9 +22,27 @@ public class ConexaoJDBC {
                     ? System.getenv("DB_PASS") 
                     : "sua_senha_local";
 
-            return DriverManager.getConnection(url, user, pass);
+            HikariConfig config = new HikariConfig();
+            config.setJdbcUrl(url);
+            config.setUsername(user);
+            config.setPassword(pass);
+            config.setDriverClassName("org.postgresql.Driver");
+
+            // Configuracoes otimizadas para o Neon (Serverless Postgres)
+            config.setMaximumPoolSize(5);
+            config.setMinimumIdle(1);
+            config.setIdleTimeout(120000);       // 2 minutos
+            config.setMaxLifetime(240000);       // 4 minutos (evita queda por inatividade do Neon)
+            config.setConnectionTimeout(20000);  // 20 segundos
+            config.addDataSourceProperty("prepareThreshold", "0");
+
+            dataSource = new HikariDataSource(config);
         } catch (ClassNotFoundException e) {
-            throw new SQLException("Driver do PostgreSQL não encontrado.", e);
+            throw new RuntimeException("Driver do PostgreSQL não encontrado.", e);
         }
+    }
+
+    public static Connection conectar() throws SQLException {
+        return dataSource.getConnection();
     }
 }

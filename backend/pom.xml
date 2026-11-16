@@ -10,7 +10,6 @@
   <packaging>war</packaging>
 
   <name>demo Maven Webapp</name>
-  <!-- FIXME change it to the project's website -->
   <url>http://www.example.com</url>
 
   <properties>
@@ -27,6 +26,13 @@
         <version>42.7.2</version>
     </dependency>
 
+    <!-- HikariCP: Pool de conexoes para deixar o banco rapido -->
+    <dependency>
+        <groupId>com.zaxxer</groupId>
+        <artifactId>HikariCP</artifactId>
+        <version>5.1.0</version>
+    </dependency>
+
     <!-- API de Servlets CORRETA para o Tomcat 10 (Jakarta) -->
     <dependency>
         <groupId>jakarta.servlet</groupId>
@@ -40,18 +46,16 @@
       <artifactId>gson</artifactId>
       <version>2.10.1</version>
     </dependency>
-
-</dependencies>
+  </dependencies>
 
   <build>
     <finalName>backend</finalName>
-    <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
+    <pluginManagement>
       <plugins>
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>
           <version>3.1.0</version>
         </plugin>
-        <!-- see http://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_war_packaging -->
         <plugin>
           <artifactId>maven-resources-plugin</artifactId>
           <version>3.0.2</version>
