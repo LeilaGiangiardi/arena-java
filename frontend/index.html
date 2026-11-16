@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arena Java - Início</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="login-body">
+
+    <div class="grid-background"></div>
+
+    <main class="hero-container">
+        <!-- Logo Principal 8-Bit: Xícara Oficial do Arena Java -->
+        <div class="nes-emblem-wrap">
+            <svg class="nes-swords-logo" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-label="Logo Arena Java">
+                <!-- Fumaça Laranja do Java -->
+                <path d="M6 1h1v2H6v1h1v2H6V5H5V3h1V1zm3 0h1v2H9v1h1v2H9V5H8V3h1V1z" fill="#f89820"/>
+                <!-- Xícara e Alça em Azul Java -->
+                <path d="M3 7h8v1h2v3h-2v1h-1v1H4v-1H3V7zm8 2v1h1V9h-1z" fill="#00a8ff"/>
+                <rect x="4" y="8" width="6" height="3" fill="#5382a1"/>
+                <!-- Pires Azul Java -->
+                <rect x="2" y="14" width="10" height="1" fill="#00a8ff"/>
+            </svg>
+        </div>
+
+        <h1 class="hero-title">&lt;Arena <span class="highlight-cyan">Java</span>/&gt;</h1>
+        <p class="hero-subtitle">
+            Domine a Programação Orientada a Objetos do básico ao avançado em uma jornada gamificada de 10 estágios. Compile seu conhecimento e suba no Ranking BSI!
+        </p>
+
+        <div class="hero-actions">
+            <button id="btn-open-modal" class="btn-run pulse-animation">
+                <i class="ph-fill ph-play"></i> INICIAR COMPILAÇÃO
+            </button>
+            <button id="btn-open-credits" type="button" class="btn-credits">
+                <i class="ph-fill ph-sparkle"></i> Créditos &amp; Sobre
+            </button>
+        </div>
+    </main>
+
+    <!-- MODAL DE LOGIN E CADASTRO -->
+    <div id="auth-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button id="btn-close-modal" class="btn-close" title="Fechar (Esc)">
+                <i class="ph ph-x"></i>
+            </button>
+
+            <div class="modal-tabs">
+                <button type="button" id="tab-login" class="tab-btn active">Entrar</button>
+                <button type="button" id="tab-register" class="tab-btn">Criar Conta</button>
+            </div>
+
+            <form id="auth-form" class="auth-form">
+                <div id="nome-group" class="input-group hidden">
+                    <label for="nome">Nome ou Nickname <span class="required-star">*</span></label>
+                    <input type="text" id="nome" placeholder="Ex: Ada Lovelace">
+                </div>
+
+                <div class="input-group">
+                    <label for="email">E-mail <span class="required-star">*</span></label>
+                    <input type="email" id="email" placeholder="aluno@ufrpe.br" required autofocus>
+                </div>
+
+                <div class="input-group">
+                    <label for="senha">Senha de Acesso <span class="required-star">*</span></label>
+                    <input type="password" id="senha" placeholder="••••••••" required>
+                    <div id="caps-warning-login" class="caps-lock-alert hidden">
+                        <i class="ph-fill ph-warning"></i> Atenção: A tecla <strong>Caps Lock</strong> está ativada!
+                    </div>
+                </div>
+
+                <span class="required-legend"><span class="required-star">*</span> Campos de preenchimento obrigatório</span>
+
+                <p id="feedback-msg" class="text-red hidden" style="font-size: 0.85rem; margin-bottom: 8px;"></p>
+
+                <button type="submit" id="btn-submit-auth" class="btn-submit">Executar Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE CRÉDITOS E AGRADECIMENTO -->
+    <div id="credits-modal" class="modal-overlay hidden">
+        <div class="modal-content credits-modal-box">
+            <button type="button" id="btn-close-credits" class="btn-close" title="Fechar (Esc)">
+                <i class="ph ph-x"></i>
+            </button>
+
+            <div class="credits-header">
+                <svg class="credits-mini-swords" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">
+                    <path d="M6 1h1v2H6v1h1v2H6V5H5V3h1V1zm3 0h1v2H9v1h1v2H9V5H8V3h1V1z" fill="#f89820"/>
+                    <path d="M3 7h8v1h2v3h-2v1h-1v1H4v-1H3V7zm8 2v1h1V9h-1z" fill="#00a8ff"/>
+                    <rect x="4" y="8" width="6" height="3" fill="#5382a1"/>
+                    <rect x="2" y="14" width="10" height="1" fill="#00a8ff"/>
+                </svg>
+                <div>
+                    <span class="label-small text-cyan">FICHA TÉCNICA &amp; AUTORIA</span>
+                    <h2>Sobre o Arena Java</h2>
+                </div>
+            </div>
+
+            <div class="credits-cards-grid">
+                <div class="credits-info-card">
+                    <i class="ph-fill ph-code text-cyan"></i>
+                    <div>
+                        <span class="credits-label">Idealização e Desenvolvimento</span>
+                        <strong>Leila Giangiardi</strong>
+                        <p>Bacharelado em Sistemas de Informação (BSI) • UAST/UFRPE</p>
+                    </div>
+                </div>
+
+                <div class="credits-info-card">
+                    <i class="ph-fill ph-graduation-cap icon-gold"></i>
+                    <div>
+                        <span class="credits-label">Disciplina Acadêmica &amp; Orientação</span>
+                        <strong>Interface Homem-Máquina (IHM)</strong>
+                        <p>Orientação: Prof. Dr. Richarlyson Alves D'Emery (UAST/UFRPE)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="credits-thanks-box">
+                <div class="credits-thanks-title">
+                    <i class="ph-fill ph-heart" style="color: #ff3366;"></i>
+                    <strong>Obrigado por visitar e jogar!</strong>
+                </div>
+                <p>
+                    O <strong>Arena Java</strong> foi projetado com carinho aplicando princípios de ergonomia, usabilidade e gamificação para tornar o aprendizado de Programação Orientada a Objetos mais leve, interativo e desafiador. Sua visita e seu feedback são fundamentais para esta jornada!
+                </p>
+            </div>
+
+            <div class="credits-footer">
+                <span class="fira-code" style="font-size: 0.76rem; color: var(--text-muted);">
+                    <i class="ph ph-envelope-simple text-cyan"></i> leila.giangiardi@ufrpe.br
+                </span>
+                <button type="button" id="btn-ok-credits" class="btn-run btn-compact">Fechar [Esc]</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/ihc-shared.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>

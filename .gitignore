@@ -1,0 +1,17 @@
+# Pastas de compilação Java
+target/
+*.class
+
+# Configurações de IDE
+.vscode/
+.idea/
+*.eclipse
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
+
+backend/src/main/resources/db.properties
+
+backend/target/
+target/

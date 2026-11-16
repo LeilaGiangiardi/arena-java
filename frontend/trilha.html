@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arena Java - Trilha de Missões</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/png" href="img/favicon.png">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="dashboard-body">
+
+    <svg class="pixel-sprites-defs" aria-hidden="true">
+        <defs>
+            <symbol id="pixel-mod-1" viewBox="0 0 100 60" shape-rendering="crispEdges">
+                <rect x="34" y="14" width="32" height="32" fill="none" stroke="currentColor" stroke-width="4"/>
+                <rect x="43" y="23" width="14" height="14" fill="currentColor"/>
+                <path d="M40 6v8M50 6v8M60 6v8M40 46v8M50 46v8M60 46v8M26 20h8M26 30h8M26 40h8M66 20h8M66 30h8M66 40h8" stroke="currentColor" stroke-width="3"/>
+            </symbol>
+            <symbol id="pixel-mod-2" viewBox="0 0 100 60" shape-rendering="crispEdges">
+                <path d="M50 54V30M50 30L30 14M50 30L70 14" fill="none" stroke="currentColor" stroke-width="5"/>
+                <polygon points="26,10 38,10 26,22" fill="#00f3ff"/>
+                <polygon points="74,10 62,10 74,22" fill="#ffd700"/>
+            </symbol>
+            <symbol id="pixel-mod-3" viewBox="0 0 100 60" shape-rendering="crispEdges">
+                <path d="M26 20h36v-8l12 11-12 11v-8H32v10h-6V20zM74 40H38v8L26 37l12-11v8h30V24h6v16z" fill="currentColor"/>
+            </symbol>
+            <symbol id="pixel-mod-4" viewBox="0 0 100 60" shape-rendering="crispEdges">
+                <rect x="26" y="10" width="48" height="40" fill="none" stroke="currentColor" stroke-width="4"/>
+                <path d="M35 22h18M35 30h30M35 38h22" stroke="#00f3ff" stroke-width="4"/>
+            </symbol>
+            <symbol id="pixel-mod-5" viewBox="0 0 100 60" shape-rendering="crispEdges">
+                <polygon points="50,6 74,18 74,42 50,54 26,42 26,18" fill="none" stroke="currentColor" stroke-width="4"/>
+                <path d="M26 18l24 12 24-12M50 30v24" fill="none" stroke="#ff00aa" stroke-width="3"/>
+            </symbol>
+            <symbol id="pixel-mod-6" viewBox="0 0 100 60" shape-rendering="crispEdges">
+                <rect x="33" y="26" width="34" height="24" fill="none" stroke="currentColor" stroke-width="4"/>
+                <path d="M40 26V16a10 10 0 0 1 20 0v10" fill="none" stroke="#ffd700" stroke-width="4"/>
+                <rect x="47" y="34" width="6" height="9" fill="#00f3ff"/>
+            </symbol>
+            <symbol id="pixel-mod-7" viewBox="0 0 100 60" shape-rendering="crispEdges">
+                <polygon points="32,8 68,8 54,30 68,52 32,52 46,30" fill="none" stroke="currentColor" stroke-width="4"/>
+                <line x1="39" y1="45" x2="61" y2="45" stroke="#ffd700" stroke-width="4"/>
+            </symbol>
+            <symbol id="pixel-mod-8" viewBox="0 0 100 60" shape-rendering="crispEdges">
+                <rect x="43" y="6" width="14" height="10" fill="currentColor"/>
+                <rect x="24" y="42" width="14" height="10" fill="#00f3ff"/>
+                <rect x="62" y="42" width="14" height="10" fill="#00ff73"/>
+                <path d="M50 16v13M31 29h38M31 29v13M69 29v13" stroke="#ffffff" stroke-width="3"/>
+            </symbol>
+            <symbol id="pixel-mod-9" viewBox="0 0 100 60" shape-rendering="crispEdges">
+                <polygon points="50,6 76,52 24,52" fill="none" stroke="currentColor" stroke-width="4"/>
+                <rect x="47" y="21" width="6" height="15" fill="#ffd700"/>
+                <rect x="47" y="40" width="6" height="6" fill="#ffd700"/>
+            </symbol>
+            <symbol id="pixel-mod-10" viewBox="0 0 100 60" shape-rendering="crispEdges">
+                <path d="M30 6h30l10 10v38H30V6z" fill="none" stroke="currentColor" stroke-width="4"/>
+                <rect x="39" y="6" width="18" height="14" fill="#ff00aa"/>
+                <rect x="37" y="34" width="26" height="14" fill="currentColor"/>
+            </symbol>
+        </defs>
+    </svg>
+
+    <aside class="sidebar">
+        <div class="sidebar-icon" data-tooltip="Perfil do Jogador" onclick="window.location.href='perfil.html'">
+            <i class="ph ph-user"></i>
+            <span class="sidebar-label">Perfil</span>
+        </div>
+        <div class="sidebar-icon" data-tooltip="Dashboard Principal" onclick="window.location.href='dashboard.html'">
+            <i class="ph ph-house"></i>
+            <span class="sidebar-label">Início</span>
+        </div>
+        <div class="sidebar-icon active" data-tooltip="Trilha de Módulos" onclick="window.location.href='trilha.html'">
+            <i class="ph ph-game-controller"></i>
+            <span class="sidebar-label">Missões</span>
+        </div>
+        <div class="sidebar-icon sidebar-help-trigger" data-tooltip="Ajustes e Guia (Ctrl+/)">
+            <i class="ph ph-gear"></i>
+            <span class="sidebar-label">Ajustes</span>
+        </div>
+        <div class="sidebar-icon logout-icon" data-tooltip="Encerrar Sessão" onclick="window.location.href='index.html'">
+            <i class="ph ph-sign-out"></i>
+            <span class="sidebar-label">Sair</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-header">
+            <h1 class="greeting">Sua Trilha de <span class="highlight-cyan">Missões</span></h1>
+            <div class="user-stats">
+                <span>Sua pontuação: <i class="ph-fill ph-medal icon-gold"></i> <strong id="user-xp">0</strong></span>
+                <span class="header-rank-wrap">Seu Ranking: <strong id="user-cargo" class="ranking-title"></strong></span>
+            </div>
+        </header>
+
+        <div class="modules-grid" id="modules-container"></div>
+    </main>
+
+    <template id="module-card-template">
+        <article class="module-card">
+            <div class="retro-cartridge-wrap">
+                <div class="retro-cartridge-frame">
+                    <div class="retro-stage-banner">STAGE 01</div>
+                    <svg class="retro-pixel-art">
+                        <use href="#pixel-mod-1"></use>
+                    </svg>
+                    <div class="retro-sub-box">CPU &amp; JVM</div>
+                </div>
+
+                <div class="card-overlay">
+                    <i class="ph-fill ph-lock-key"></i>
+                    <span>RESTRITO</span>
+                </div>
+                <div class="card-overlay-success">
+                    <i class="ph-fill ph-check-circle"></i>
+                </div>
+            </div>
+
+            <div class="card-info">
+                <div class="timer-container card-bar-track">
+                    <div class="timer-bar card-bar-fill"></div>
+                </div>
+                <span class="card-progress-num">0/10</span>
+            </div>
+        </article>
+    </template>
+
+    <!-- POP-UP RETRÔ DO MÓDULO -->
+    <div id="module-modal" class="modal-overlay hidden">
+        <div class="modal-content mission-modal-box">
+            <button id="btn-close-panel" class="btn-close" title="Fechar (Esc)">
+                <i class="ph ph-x"></i>
+            </button>
+
+            <div class="mission-modal-top">
+                <div id="modal-cartridge" class="retro-cartridge-frame modal-cartridge-size">
+                    <div id="panel-stage-tag" class="retro-stage-banner">STAGE 01</div>
+                    <svg class="retro-pixel-art">
+                        <use id="panel-pixel-use" href="#pixel-mod-1"></use>
+                    </svg>
+                    <div id="panel-sub-tag" class="retro-sub-box">CPU &amp; JVM</div>
+                </div>
+
+                <div class="mission-title-area">
+                    <span id="panel-status-badge" class="badge">STATUS</span>
+                    <h2 id="panel-title">Nome do Módulo</h2>
+                    <p id="panel-desc" class="mission-desc">Descrição do módulo.</p>
+                </div>
+            </div>
+
+            <div class="mission-stats-box">
+                <div class="mission-progress-header">
+                    <span>Progresso da Missão</span>
+                    <strong id="panel-progress-text" class="fira-code">0 / 10</strong>
+                </div>
+                <div class="timer-container modal-bar-track">
+                    <div id="panel-progress-bar" class="timer-bar"></div>
+                </div>
+                <div class="mission-rules-row">
+                    <span><i class="ph-fill ph-target text-cyan"></i> Desbloqueio: <strong>60% (6/10)</strong></span>
+                    <span><i class="ph-fill ph-trophy icon-gold"></i> Recompensa: <strong class="text-cyan">+<span id="panel-xp-bonus">100</span> XP</strong></span>
+                </div>
+            </div>
+
+            <div class="mission-modal-footer">
+                <button type="button" id="btn-cancel-mission" class="btn-alt">Voltar [Esc]</button>
+                <button type="button" id="btn-start-module" class="btn-run">Iniciar Missão</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE AJUSTES E GUIA RÁPIDO -->
+    <div id="ihc-help-modal" class="modal-overlay hidden">
+        <div class="modal-content ihc-settings-modal">
+            <button type="button" id="btn-close-ihc-help" class="btn-close" title="Fechar (Esc)">
+                <i class="ph ph-x"></i>
+            </button>
+
+            <div class="ihc-modal-header">
+                <h2><i class="ph-fill ph-sliders-horizontal text-cyan"></i> Painel de Preferências</h2>
+            </div>
+
+            <div class="modal-tabs ihc-tabs">
+                <button type="button" id="tab-btn-settings" class="tab-btn active">
+                    <i class="ph-fill ph-gear"></i> Ajustes
+                </button>
+                <button type="button" id="tab-btn-guide" class="tab-btn">
+                    <i class="ph-fill ph-keyboard"></i> Atalhos & Regras
+                </button>
+            </div>
+
+            <div id="ihc-pane-settings" class="ihc-tab-pane">
+                <div class="ihc-settings-list">
+                    <label class="ihc-switch-row" for="pref-sound">
+                        <div class="ihc-switch-info">
+                            <strong><i class="ph-fill ph-speaker-high text-cyan"></i> Efeitos Sonoros 8-Bit</strong>
+                            <span>Sons interativos de navegação, acerto e erro</span>
+                        </div>
+                        <input type="checkbox" id="pref-sound" class="ihc-switch-input">
+                        <span class="ihc-switch-slider"></span>
+                    </label>
+
+                    <label class="ihc-switch-row" for="pref-timer">
+                        <div class="ihc-switch-info">
+                            <strong><i class="ph-fill ph-timer text-cyan"></i> Cronômetro Visual no Quiz</strong>
+                            <span>Exibe a barra regressiva de tempo nas questões</span>
+                        </div>
+                        <input type="checkbox" id="pref-timer" class="ihc-switch-input">
+                        <span class="ihc-switch-slider"></span>
+                    </label>
+
+                    <label class="ihc-switch-row" for="pref-shake">
+                        <div class="ihc-switch-info">
+                            <strong><i class="ph-fill ph-vibrate text-cyan"></i> Impacto Visual (Shake)</strong>
+                            <span>Animação de tremor na janela ao errar questão</span>
+                        </div>
+                        <input type="checkbox" id="pref-shake" class="ihc-switch-input">
+                        <span class="ihc-switch-slider"></span>
+                    </label>
+                </div>
+
+                <div class="ihc-theme-section">
+                    <span class="label-small">TEMA VISUAL DA ARENA</span>
+                    <div class="ihc-theme-cards">
+                        <button type="button" id="btn-theme-cyber" class="theme-card-btn selected">
+                            <i class="ph-fill ph-sparkle"></i>
+                            <strong>Cyberpunk Neon</strong>
+                            <span>Alto contraste escuro</span>
+                        </button>
+                        <button type="button" id="btn-theme-classic" class="theme-card-btn">
+                            <i class="ph-fill ph-terminal-window"></i>
+                            <strong>IDE Clássica</strong>
+                            <span>Cinza neutro suave</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="ihc-pane-guide" class="ihc-tab-pane hidden">
+                <div class="ihc-guide-block">
+                    <span class="label-small">ATALHOS DE TECLADO</span>
+                    <div class="ihc-shortcuts-grid">
+                        <div class="shortcut-item"><kbd>1</kbd> a <kbd>4</kbd> <span>Alternativas A–D</span></div>
+                        <div class="shortcut-item"><kbd>Enter</kbd> <span>Confirmar / Avançar</span></div>
+                        <div class="shortcut-item"><kbd>Esc</kbd> <span>Pausar / Fechar</span></div>
+                        <div class="shortcut-item"><kbd>Ctrl + /</kbd> <span>Abrir Ajustes</span></div>
+                    </div>
+                </div>
+
+                <div class="ihc-guide-block">
+                    <span class="label-small">REGRAS DE PROGRESSÃO</span>
+                    <div class="ihc-rules-cards">
+                        <div class="rule-mini-card">
+                            <i class="ph-fill ph-lock-key-open text-cyan"></i>
+                            <div>
+                                <strong>Média de 60% para Avançar</strong>
+                                <span>Acerte ao menos 6 de 10 questões para desbloquear o próximo estágio.</span>
+                            </div>
+                        </div>
+                        <div class="rule-mini-card">
+                            <i class="ph-fill ph-medal icon-gold"></i>
+                            <div>
+                                <strong>Sistema Anti-Chute</strong>
+                                <span>Questões inéditas somam +10 a +100 XP. Erros descontam -5 XP.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ihc-modal-footer">
+                <button type="button" id="btn-ok-ihc-help" class="btn-run btn-compact">Concluir</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/ihc-shared.js"></script>
+    <script src="js/trilha.js"></script>
+</body>
+</html>

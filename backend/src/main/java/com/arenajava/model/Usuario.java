@@ -1,0 +1,162 @@
+package com.arenajava.model;
+
+import java.sql.Timestamp;
+
+public class Usuario {
+
+    private Integer id;
+    private String nome;
+    private String email;
+    
+    private String senhaHash;
+    private int xp;
+    private String cargo;
+    private Timestamp criadoEm;
+    private String avatar;
+
+    // Novos campos do Dashboard
+    private int ofensiva;
+    private int questoesAcertadas;
+    private int totalQuestoes;
+    private String dominio;
+
+    public Usuario() {
+    }
+
+    /**
+     * Construtor utilitário para cadastrar um novo usuário.
+     * Não inclui id, xp, cargo e criadoEm porque estes são gerados automaticamente
+     * pelo PostgreSQL.
+     */
+    public Usuario(String nome, String email, String senhaHash) {
+        this.nome = nome;
+        this.email = email;
+        this.senhaHash = senhaHash;
+        this.xp = 0;
+        this.cargo = "Derrubador de Servidor";
+    }
+
+    /**
+     * Construtor completo para reidratar o objeto quando os dados vêm do banco via
+     * JDBC.
+     */
+    public Usuario(Integer id, String nome, String email, String senhaHash, int xp, String cargo,
+            Timestamp criadoEm) {
+        this.id = id;
+        this.nome = nome;
+        this.email = email;
+        this.senhaHash = senhaHash;
+        this.xp = xp;
+        this.cargo = cargo;
+        this.criadoEm = criadoEm;
+    }
+
+    // Getters e Setters
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getSenhaHash() {
+        return senhaHash;
+    }
+
+    public void setSenhaHash(String senhaHash) {
+        this.senhaHash = senhaHash;
+    }
+
+    public int getXp() {
+        return xp;
+    }
+
+    public void setXp(int xp) {
+        this.xp = xp;
+    }
+
+    public String getCargo() {
+        return cargo;
+    }
+
+    public void setCargo(String cargo) {
+        this.cargo = cargo;
+    }
+
+    public Timestamp getCriadoEm() {
+        return criadoEm;
+    }
+
+    public void setCriadoEm(Timestamp criadoEm) {
+        this.criadoEm = criadoEm;
+    }
+
+    public int getOfensiva() {
+        return ofensiva;
+    }
+
+    public void setOfensiva(int ofensiva) {
+        this.ofensiva = ofensiva;
+    }
+
+    public int getQuestoesAcertadas() {
+        return questoesAcertadas;
+    }
+
+    public void setQuestoesAcertadas(int questoesAcertadas) {
+        this.questoesAcertadas = questoesAcertadas;
+    }
+
+    public int getTotalQuestoes() {
+        return totalQuestoes;
+    }
+
+    public void setTotalQuestoes(int totalQuestoes) {
+        this.totalQuestoes = totalQuestoes;
+    }
+
+    public String getDominio() {
+        return dominio;
+    }
+
+    public void setDominio(String dominio) {
+        this.dominio = dominio;
+    }
+
+    @Override
+    public String toString() {
+        return "Usuario{" +
+                "id=" + id +
+                ", nome='" + nome + '\'' +
+                ", email='" + email + '\'' +
+                ", xp=" + xp +
+                ", cargo='" + cargo + '\'' +
+                '}';
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+}

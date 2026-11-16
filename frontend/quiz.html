@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arena Java - Desafio em Andamento</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="dashboard-body">
+
+    <aside class="sidebar">
+        <div class="sidebar-icon" data-tooltip="Perfil do Jogador" onclick="window.location.href='perfil.html'">
+            <i class="ph ph-user"></i>
+            <span class="sidebar-label">Perfil</span>
+        </div>
+        <div class="sidebar-icon" data-tooltip="Dashboard Principal" onclick="window.location.href='dashboard.html'">
+            <i class="ph ph-house"></i>
+            <span class="sidebar-label">Início</span>
+        </div>
+        <div class="sidebar-icon active" data-tooltip="Trilha de Módulos" onclick="window.location.href='trilha.html'">
+            <i class="ph ph-game-controller"></i>
+            <span class="sidebar-label">Missões</span>
+        </div>
+        <div class="sidebar-icon sidebar-help-trigger" data-tooltip="Ajustes e Guia (Ctrl+/)">
+            <i class="ph ph-gear"></i>
+            <span class="sidebar-label">Ajustes</span>
+        </div>
+        <div class="sidebar-icon logout-icon" data-tooltip="Encerrar Sessão" onclick="window.location.href='index.html'">
+            <i class="ph ph-sign-out"></i>
+            <span class="sidebar-label">Sair</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-header">
+            <h1 class="greeting">Desafio em <span class="highlight-cyan">Andamento</span></h1>
+            <div class="user-stats">
+                <span>Sua pontuação: <i class="ph-fill ph-medal icon-gold"></i> <strong id="user-xp">0</strong></span>
+                <span class="header-rank-wrap">Seu Ranking: <strong id="user-cargo" class="ranking-title"></strong></span>
+                <button id="btn-close-quiz" class="btn-exit-quiz" title="Pausar e Sair (Esc)">
+                    <i class="ph ph-sign-out"></i> Sair [Esc]
+                </button>
+            </div>
+        </header>
+
+        <section id="active-quiz-section" class="quiz-card">
+            <div class="quiz-header">
+                <span id="question-counter" class="badge static-badge">Pergunta 1/10</span>
+                <span id="xp-reward" class="badge xp-badge static-badge">+ 10 XP</span>
+                <span id="review-mode-badge" class="badge review-badge hidden">
+                    <i class="ph-bold ph-arrows-clockwise"></i> MODO REVISÃO (Sem perda de XP)
+                </span>
+                <div class="timer-container">
+                    <div id="timer-bar" class="timer-bar"></div>
+                </div>
+                <span id="timer-seconds" class="fira-code text-cyan" style="font-size: 0.85rem;">45s</span>
+            </div>
+
+            <h2 id="question-text">Carregando questão...</h2>
+            <pre id="code-snippet" class="code-snippet hidden"></pre>
+
+            <div id="answer-area"></div>
+
+            <div id="boss-helper-bar" class="boss-helper-bar hidden">
+                <div class="boss-helper-top">
+                    <button type="button" id="btn-show-hint" class="btn-hint">
+                        <i class="ph-fill ph-lightbulb"></i> Pedir Dica de Sintaxe
+                    </button>
+                    <span id="caps-warning-quiz" class="caps-lock-alert hidden">
+                        <i class="ph-fill ph-warning"></i> <strong>Caps Lock ativado!</strong> O Java diferencia maiúsculas de minúsculas.
+                    </span>
+                </div>
+                <div id="boss-hint-box" class="boss-hint-box hidden"></div>
+                <div id="boss-syntax-warning" class="boss-syntax-warning hidden"></div>
+            </div>
+
+            <div class="quiz-footer">
+                <button id="btn-confirm" class="btn-run" disabled>Confirmar Resposta [Enter]</button>
+            </div>
+        </section>
+
+        <section id="summary-section" class="summary-card hidden">
+            <div class="summary-header">
+                <h1 class="glow-text">Módulo Concluído!</h1>
+                <p style="color: var(--text-muted);">O servidor processou suas respostas.</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <span class="stat-title">XP Ganho</span>
+                    <span id="final-xp" class="stat-value text-green">+ 0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-title">Acertos</span>
+                    <span id="final-correct" class="stat-value text-cyan">0/10</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-title">Bugs (Erros)</span>
+                    <span id="final-errors" class="stat-value text-red">0</span>
+                </div>
+            </div>
+
+            <div class="feedback-section">
+                <h3><i class="ph-fill ph-wrench"></i> Relatório de Otimização</h3>
+                <ul id="improvement-list" class="improvement-list"></ul>
+            </div>
+
+            <div class="summary-footer">
+                <button class="btn-run" onclick="window.location.href='trilha.html'">Voltar para a Trilha</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL DE FEEDBACK PÓS-RESPOSTA -->
+    <div id="feedback-modal" class="modal-overlay hidden">
+        <div class="modal-content feedback-content">
+            <h2 id="feedback-title">Resultado</h2>
+            <p id="feedback-explanation" class="feedback-text"></p>
+            <button id="btn-next-question" class="btn-run" style="width: 100%;">Próxima Questão [Enter]</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIRMAÇÃO AO SAIR (ESC) -->
+    <div id="exit-confirm-modal" class="modal-overlay hidden">
+        <div class="modal-content exit-confirm-box">
+            <h3><i class="ph-fill ph-pause-circle text-cyan"></i> Pausar Missão?</h3>
+            <p class="feedback-text">
+                Tem certeza que deseja voltar para a Trilha? Fique tranquilo: <strong>todas as questões que você já respondeu até aqui estão salvas no banco de dados!</strong>
+            </p>
+            <div class="exit-confirm-actions">
+                <button type="button" id="btn-continue-playing" class="btn-run">Continuar Jogando [Esc]</button>
+                <button type="button" id="btn-confirm-exit" class="btn-alt">Sair para a Trilha</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE AJUSTES E GUIA RÁPIDO -->
+    <div id="ihc-help-modal" class="modal-overlay hidden">
+        <div class="modal-content ihc-settings-modal">
+            <button type="button" id="btn-close-ihc-help" class="btn-close" title="Fechar (Esc)">
+                <i class="ph ph-x"></i>
+            </button>
+
+            <div class="ihc-modal-header">
+                <h2><i class="ph-fill ph-sliders-horizontal text-cyan"></i> Painel de Preferências</h2>
+            </div>
+
+            <div class="modal-tabs ihc-tabs">
+                <button type="button" id="tab-btn-settings" class="tab-btn active">
+                    <i class="ph-fill ph-gear"></i> Ajustes
+                </button>
+                <button type="button" id="tab-btn-guide" class="tab-btn">
+                    <i class="ph-fill ph-keyboard"></i> Atalhos & Regras
+                </button>
+            </div>
+
+            <div id="ihc-pane-settings" class="ihc-tab-pane">
+                <div class="ihc-settings-list">
+                    <label class="ihc-switch-row" for="pref-sound">
+                        <div class="ihc-switch-info">
+                            <strong><i class="ph-fill ph-speaker-high text-cyan"></i> Efeitos Sonoros 8-Bit</strong>
+                            <span>Sons interativos de navegação, acerto e erro</span>
+                        </div>
+                        <input type="checkbox" id="pref-sound" class="ihc-switch-input">
+                        <span class="ihc-switch-slider"></span>
+                    </label>
+
+                    <label class="ihc-switch-row" for="pref-timer">
+                        <div class="ihc-switch-info">
+                            <strong><i class="ph-fill ph-timer text-cyan"></i> Cronômetro Visual no Quiz</strong>
+                            <span>Exibe a barra regressiva de tempo nas questões</span>
+                        </div>
+                        <input type="checkbox" id="pref-timer" class="ihc-switch-input">
+                        <span class="ihc-switch-slider"></span>
+                    </label>
+
+                    <label class="ihc-switch-row" for="pref-shake">
+                        <div class="ihc-switch-info">
+                            <strong><i class="ph-fill ph-vibrate text-cyan"></i> Impacto Visual (Shake)</strong>
+                            <span>Animação de tremor na janela ao errar questão</span>
+                        </div>
+                        <input type="checkbox" id="pref-shake" class="ihc-switch-input">
+                        <span class="ihc-switch-slider"></span>
+                    </label>
+                </div>
+
+                <div class="ihc-theme-section">
+                    <span class="label-small">TEMA VISUAL DA ARENA</span>
+                    <div class="ihc-theme-cards">
+                        <button type="button" id="btn-theme-cyber" class="theme-card-btn selected">
+                            <i class="ph-fill ph-sparkle"></i>
+                            <strong>Cyberpunk Neon</strong>
+                            <span>Alto contraste escuro</span>
+                        </button>
+                        <button type="button" id="btn-theme-classic" class="theme-card-btn">
+                            <i class="ph-fill ph-terminal-window"></i>
+                            <strong>IDE Clássica</strong>
+                            <span>Cinza neutro suave</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="ihc-pane-guide" class="ihc-tab-pane hidden">
+                <div class="ihc-guide-block">
+                    <span class="label-small">ATALHOS DE TECLADO</span>
+                    <div class="ihc-shortcuts-grid">
+                        <div class="shortcut-item"><kbd>1</kbd> a <kbd>4</kbd> <span>Alternativas A–D</span></div>
+                        <div class="shortcut-item"><kbd>Enter</kbd> <span>Confirmar / Avançar</span></div>
+                        <div class="shortcut-item"><kbd>Esc</kbd> <span>Pausar / Fechar</span></div>
+                        <div class="shortcut-item"><kbd>Ctrl + /</kbd> <span>Abrir Ajustes</span></div>
+                    </div>
+                </div>
+
+                <div class="ihc-guide-block">
+                    <span class="label-small">REGRAS DE PROGRESSÃO</span>
+                    <div class="ihc-rules-cards">
+                        <div class="rule-mini-card">
+                            <i class="ph-fill ph-lock-key-open text-cyan"></i>
+                            <div>
+                                <strong>Média de 60% para Avançar</strong>
+                                <span>Acerte ao menos 6 de 10 questões para desbloquear o próximo estágio.</span>
+                            </div>
+                        </div>
+                        <div class="rule-mini-card">
+                            <i class="ph-fill ph-medal icon-gold"></i>
+                            <div>
+                                <strong>Sistema Anti-Chute</strong>
+                                <span>Questões inéditas somam +10 a +100 XP. Erros descontam -5 XP.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ihc-modal-footer">
+                <button type="button" id="btn-ok-ihc-help" class="btn-run btn-compact">Concluir</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/ihc-shared.js"></script>
+    <script src="js/quiz.js"></script>
+</body>
+</html>

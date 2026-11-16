@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arena Java - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="dashboard-body">
+
+    <aside class="sidebar">
+        <div class="sidebar-icon" data-tooltip="Perfil do Jogador" onclick="window.location.href='perfil.html'">
+            <i class="ph ph-user"></i>
+            <span class="sidebar-label">Perfil</span>
+        </div>
+        <div class="sidebar-icon active" data-tooltip="Dashboard Principal" onclick="window.location.href='dashboard.html'">
+            <i class="ph ph-house"></i>
+            <span class="sidebar-label">Início</span>
+        </div>
+        <div class="sidebar-icon" data-tooltip="Trilha de Módulos" onclick="window.location.href='trilha.html'">
+            <i class="ph ph-game-controller"></i>
+            <span class="sidebar-label">Missões</span>
+        </div>
+        <div class="sidebar-icon sidebar-help-trigger" data-tooltip="Ajustes e Guia (Ctrl+/)">
+            <i class="ph ph-gear"></i>
+            <span class="sidebar-label">Ajustes</span>
+        </div>
+        <div class="sidebar-icon logout-icon" data-tooltip="Encerrar Sessão" onclick="window.location.href='index.html'">
+            <i class="ph ph-sign-out"></i>
+            <span class="sidebar-label">Sair</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-header">
+            <h1 class="greeting"><span id="saudacao">Boa noite</span>, <span id="user-nome" class="highlight-cyan">Carregando...</span>!</h1>
+            <div class="user-stats">
+                <span>Sua pontuação: <i class="ph-fill ph-medal icon-gold"></i> <strong id="user-xp">0</strong></span>
+                <span class="header-rank-wrap">Seu Ranking: <strong id="user-cargo" class="ranking-title"></strong></span>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-left">
+                <!-- 1. Cartão Superior: Apenas Indicadores de Desempenho (Sem botão repetido) -->
+                <section class="dashboard-card summary-overview">
+                    <div class="card-header-flex">
+                        <h2><i class="ph-fill ph-chart-line-up text-cyan"></i> Seu Desempenho na Arena</h2>
+                    </div>
+                    <div class="overview-stats">
+                        <div class="overview-box fire-streak">
+                            <i class="ph-fill ph-fire"></i>
+                            <div>
+                                <h3 id="stat-ofensiva">0 Dias</h3>
+                                <p>Ofensiva Java</p>
+                            </div>
+                        </div>
+                        <div class="overview-box hits">
+                            <i class="ph-fill ph-target"></i>
+                            <div>
+                                <h3 id="stat-acertos">0 / 100</h3>
+                                <p>Questões Acertadas</p>
+                            </div>
+                        </div>
+                        <div class="overview-box strong-point">
+                            <i class="ph-fill ph-cpu"></i>
+                            <div>
+                                <h3 id="stat-dominio">Iniciante</h3>
+                                <p>Seu maior domínio</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. Banner Único de Ação ("Jogar Agora" para contas novas / "Continuar" para contas em andamento) -->
+                <section class="dashboard-card next-mission-banner">
+                    <div class="next-mission-left">
+                        <div class="next-mission-icon">
+                            <i class="ph-duotone ph-game-controller"></i>
+                        </div>
+                        <div class="next-mission-texts">
+                            <span id="quick-stage-badge" class="label-small text-cyan">MISSÃO ATUAL • ESTÁGIO 01</span>
+                            <h3 id="quick-module-title">Carregando módulo...</h3>
+                        </div>
+                    </div>
+
+                    <div class="next-mission-right">
+                        <div class="next-mission-progress">
+                            <div class="next-mission-progress-labels">
+                                <span>Progresso</span>
+                                <strong id="quick-progress-text" class="fira-code text-cyan">0/10</strong>
+                            </div>
+                            <div class="timer-container" style="height: 8px; width: 160px;">
+                                <div id="quick-progress-bar" class="timer-bar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                        <button type="button" id="btn-quick-play" class="btn-run">
+                            <i class="ph-fill ph-play"></i> <span id="btn-quick-play-text">Jogar Agora</span>
+                        </button>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Coluna Direita: Ranking Global -->
+            <section class="dashboard-card ranking-panel">
+                <div>
+                    <h2><i class="ph-fill ph-trophy icon-gold"></i> Ranking Global BSI</h2>
+                    <p class="subtitle">Alunos com as notas mais altas</p>
+                </div>
+                <ul class="ranking-list" id="ranking-list"></ul>
+                <button id="btn-ver-todos" class="btn-run">Ver Ranking Completo</button>
+            </section>
+        </div>
+    </main>
+
+    <!-- MODAL DO RANKING COMPLETO -->
+    <div id="ranking-modal" class="modal-overlay hidden">
+        <div class="modal-content ranking-content">
+            <div class="modal-header">
+                <h2><i class="ph-fill ph-trophy icon-gold"></i> Ranking da Turma</h2>
+                <button id="btn-close-ranking" class="btn-close" title="Fechar (Esc)"><i class="ph ph-x"></i></button>
+            </div>
+
+            <div class="ranking-filters-bar">
+                <input type="text" id="search-ranking" class="search-input" placeholder="Buscar aluno por nome ou XP...">
+                <div class="ranking-filter-actions">
+                    <select id="filter-rank-cargo" class="ranking-select">
+                        <option value="">Todas as Patentes (Cargos)</option>
+                        <option value="Compilador Humano">Compilador Humano</option>
+                        <option value="Mestre do Stack Overflow">Mestre do Stack Overflow</option>
+                        <option value="Refém da Inteligência Artificial">Refém da Inteligência Artificial</option>
+                        <option value="Caçador de Ponto e Vírgula">Caçador de Ponto e Vírgula (;)</option>
+                        <option value="Criador de bugs">Criador de bugs</option>
+                        <option value="Derrubador de Servidor">Derrubador de Servidor</option>
+                    </select>
+                    <button type="button" id="btn-find-me" class="btn-alt btn-small" title="Rolar até sua posição">
+                        <i class="ph-fill ph-crosshair text-cyan"></i> Minha Posição
+                    </button>
+                </div>
+            </div>
+
+            <ul class="ranking-list full-ranking-list" id="full-ranking-list"></ul>
+        </div>
+    </div>
+
+    <!-- MODAL DE AJUSTES E GUIA RÁPIDO (Estruturado em Abas por IHC) -->
+    <div id="ihc-help-modal" class="modal-overlay hidden">
+        <div class="modal-content ihc-settings-modal">
+            <button type="button" id="btn-close-ihc-help" class="btn-close" title="Fechar (Esc)">
+                <i class="ph ph-x"></i>
+            </button>
+
+            <div class="ihc-modal-header">
+                <h2><i class="ph-fill ph-sliders-horizontal text-cyan"></i> Painel de Preferências</h2>
+            </div>
+
+            <div class="modal-tabs ihc-tabs">
+                <button type="button" id="tab-btn-settings" class="tab-btn active">
+                    <i class="ph-fill ph-gear"></i> Ajustes
+                </button>
+                <button type="button" id="tab-btn-guide" class="tab-btn">
+                    <i class="ph-fill ph-keyboard"></i> Atalhos & Regras
+                </button>
+            </div>
+
+            <!-- ABA 1: AJUSTES DE INTERFACE -->
+            <div id="ihc-pane-settings" class="ihc-tab-pane">
+                <div class="ihc-settings-list">
+                    <label class="ihc-switch-row" for="pref-sound">
+                        <div class="ihc-switch-info">
+                            <strong><i class="ph-fill ph-speaker-high text-cyan"></i> Efeitos Sonoros 8-Bit</strong>
+                            <span>Sons interativos de navegação, acerto e erro</span>
+                        </div>
+                        <input type="checkbox" id="pref-sound" class="ihc-switch-input">
+                        <span class="ihc-switch-slider"></span>
+                    </label>
+
+                    <label class="ihc-switch-row" for="pref-timer">
+                        <div class="ihc-switch-info">
+                            <strong><i class="ph-fill ph-timer text-cyan"></i> Cronômetro Visual no Quiz</strong>
+                            <span>Exibe a barra regressiva de tempo nas questões</span>
+                        </div>
+                        <input type="checkbox" id="pref-timer" class="ihc-switch-input">
+                        <span class="ihc-switch-slider"></span>
+                    </label>
+
+                    <label class="ihc-switch-row" for="pref-shake">
+                        <div class="ihc-switch-info">
+                            <strong><i class="ph-fill ph-vibrate text-cyan"></i> Impacto Visual (Shake)</strong>
+                            <span>Animação de tremor na janela ao errar questão</span>
+                        </div>
+                        <input type="checkbox" id="pref-shake" class="ihc-switch-input">
+                        <span class="ihc-switch-slider"></span>
+                    </label>
+                </div>
+
+                <div class="ihc-theme-section">
+                    <span class="label-small">TEMA VISUAL DA ARENA</span>
+                    <div class="ihc-theme-cards">
+                        <button type="button" id="btn-theme-cyber" class="theme-card-btn selected">
+                            <i class="ph-fill ph-sparkle"></i>
+                            <strong>Cyberpunk Neon</strong>
+                            <span>Alto contraste escuro</span>
+                        </button>
+                        <button type="button" id="btn-theme-classic" class="theme-card-btn">
+                            <i class="ph-fill ph-terminal-window"></i>
+                            <strong>IDE Clássica</strong>
+                            <span>Cinza neutro suave</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA 2: ATALHOS E REGRAS -->
+            <div id="ihc-pane-guide" class="ihc-tab-pane hidden">
+                <div class="ihc-guide-block">
+                    <span class="label-small">ATALHOS DE TECLADO</span>
+                    <div class="ihc-shortcuts-grid">
+                        <div class="shortcut-item"><kbd>1</kbd> a <kbd>4</kbd> <span>Alternativas A–D</span></div>
+                        <div class="shortcut-item"><kbd>Enter</kbd> <span>Confirmar / Avançar</span></div>
+                        <div class="shortcut-item"><kbd>Esc</kbd> <span>Pausar / Fechar</span></div>
+                        <div class="shortcut-item"><kbd>Ctrl + /</kbd> <span>Abrir Ajustes</span></div>
+                    </div>
+                </div>
+
+                <div class="ihc-guide-block">
+                    <span class="label-small">REGRAS DE PROGRESSÃO</span>
+                    <div class="ihc-rules-cards">
+                        <div class="rule-mini-card">
+                            <i class="ph-fill ph-lock-key-open text-cyan"></i>
+                            <div>
+                                <strong>Média de 60% para Avançar</strong>
+                                <span>Acerte ao menos 6 de 10 questões para desbloquear o próximo estágio.</span>
+                            </div>
+                        </div>
+                        <div class="rule-mini-card">
+                            <i class="ph-fill ph-medal icon-gold"></i>
+                            <div>
+                                <strong>Sistema Anti-Chute</strong>
+                                <span>Questões inéditas somam +10 a +100 XP. Erros descontam -5 XP.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ihc-modal-footer">
+                <button type="button" id="btn-ok-ihc-help" class="btn-run btn-compact">Concluir</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/ihc-shared.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
