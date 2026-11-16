@@ -26,7 +26,6 @@ const AVATARES_SERIOS = [
     "seed=Crimson&baseColor=880e4f&eyes=robocop&mouth=square01"
 ];
 
-// Patentes 100% livres de Emojis, com Ícones Vetoriais Neon dedicados
 const PATENTES = [
     { nome: "Derrubador de Servidor", minXp: 0, icone: "ph-fill ph-lightning", cor: "#ff3366" },
     { nome: "Criador de bugs", minXp: 200, icone: "ph-fill ph-bug-beetle", cor: "#00ff73" },
@@ -73,31 +72,49 @@ function inicializarPerfil(email) {
     configurarModalEdicao(email);
 }
 
+function aplicarProgressoTrilhaNoPerfil(modulos) {
+    if (!modulos) return;
+
+    const totalModulos = modulos.length || 10;
+    const modulosConcluidos = modulos.filter(m => m.concluido).length;
+    const questoesAcertadas = modulos.reduce((acc, m) => acc + (m.questoesRespondidas || 0), 0);
+    const totalQuestoes = modulos.reduce((acc, m) => acc + (m.totalQuestoes || 10), 0) || 100;
+    const pctGeral = Math.min(100, Math.round((questoesAcertadas / totalQuestoes) * 100));
+
+    document.getElementById("stat-questions").textContent = `${questoesAcertadas} / ${totalQuestoes}`;
+    document.getElementById("stat-modules").textContent = `${modulosConcluidos} / ${totalModulos}`;
+
+    document.getElementById("career-pct-badge").textContent = `${pctGeral}% Concluído`;
+    document.getElementById("career-progress-bar").style.width = `${pctGeral}%`;
+
+    const detailEl = document.getElementById("career-detail-text");
+    if (modulosConcluidos === totalModulos) {
+        detailEl.innerHTML = `<i class="ph-fill ph-trophy icon-gold"></i> Parabéns! Você concluiu todos os 10 módulos da Arena Java!`;
+    } else {
+        detailEl.textContent = `Você já concluiu ${modulosConcluidos} de ${totalModulos} módulos (${questoesAcertadas} questões dominadas).`;
+    }
+}
+
 function carregarProgressoRealTrilha(email) {
+    // 1. Se já tem os módulos salvos na sessão, mostra na hora sem chamar o Render!
+    const cacheTrilha = sessionStorage.getItem("cache_trilha");
+    if (cacheTrilha) {
+        try {
+            aplicarProgressoTrilhaNoPerfil(JSON.parse(cacheTrilha));
+            return;
+        } catch (e) {
+            sessionStorage.removeItem("cache_trilha");
+        }
+    }
+
+    // 2. Só busca no servidor se ainda não existir no cache
     const url = `https://arena-java-api.onrender.com/api/trilha?email=${encodeURIComponent(email)}`;
     fetch(url)
         .then(res => res.json())
         .then(data => {
             if (!data.sucesso || !data.modulos) return;
-
-            const totalModulos = data.modulos.length || 10;
-            const modulosConcluidos = data.modulos.filter(m => m.concluido).length;
-            const questoesAcertadas = data.modulos.reduce((acc, m) => acc + (m.questoesRespondidas || 0), 0);
-            const totalQuestoes = data.modulos.reduce((acc, m) => acc + (m.totalQuestoes || 10), 0) || 100;
-            const pctGeral = Math.min(100, Math.round((questoesAcertadas / totalQuestoes) * 100));
-
-            document.getElementById("stat-questions").textContent = `${questoesAcertadas} / ${totalQuestoes}`;
-            document.getElementById("stat-modules").textContent = `${modulosConcluidos} / ${totalModulos}`;
-
-            document.getElementById("career-pct-badge").textContent = `${pctGeral}% Concluído`;
-            document.getElementById("career-progress-bar").style.width = `${pctGeral}%`;
-
-            const detailEl = document.getElementById("career-detail-text");
-            if (modulosConcluidos === totalModulos) {
-                detailEl.innerHTML = `<i class="ph-fill ph-trophy icon-gold"></i> Parabéns! Você concluiu todos os 10 módulos da Arena Java!`;
-            } else {
-                detailEl.textContent = `Você já concluiu ${modulosConcluidos} de ${totalModulos} módulos (${questoesAcertadas} questões dominadas).`;
-            }
+            sessionStorage.setItem("cache_trilha", JSON.stringify(data.modulos));
+            aplicarProgressoTrilhaNoPerfil(data.modulos);
         })
         .catch(err => console.error("Erro ao buscar progresso:", err));
 }
@@ -232,6 +249,9 @@ function configurarModalEdicao(email) {
                 if (data.sucesso) {
                     sessionStorage.setItem("nomeUsuario", novoNome);
                     sessionStorage.setItem("avatarUsuario", avatarSelecionado);
+                    // Limpa o cache do dashboard para atualizar seu nome/avatar no ranking
+                    sessionStorage.removeItem("cache_dashboard");
+
                     document.getElementById("profile-name").textContent = novoNome;
                     document.getElementById("profile-avatar-img").src = montarUrlAvatar(avatarSelecionado);
                     if (window.ArenaIHC) ArenaIHC.playSound("success");
