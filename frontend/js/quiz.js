@@ -8,8 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    const API_URL = `http://localhost:8080/backend/api/quiz?moduloId=${moduloId}&email=${encodeURIComponent(emailDoJogador)}`;
-    const PROGRESSO_URL = "http://localhost:8080/backend/api/progresso";
+    const API_URL = `https://arena-java-api.onrender.com/api/quiz?moduloId=${moduloId}&email=${encodeURIComponent(emailDoJogador)}`;
+    const PROGRESSO_URL = "https://arena-java-api.onrender.com/api/progresso";
 
     const elCargo = document.getElementById("user-cargo");
     const elXp = document.getElementById("user-xp");

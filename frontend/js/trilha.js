@@ -32,7 +32,7 @@ const CARTUCHOS_CONFIG = {
 };
 
 function carregarTrilha(email) {
-    const url = `http://localhost:8080/backend/api/trilha?email=${encodeURIComponent(email)}`;
+    const url = `https://arena-java-api.onrender.com/api/trilha?email=${encodeURIComponent(email)}`;
 
     fetch(url)
         .then(response => response.json())

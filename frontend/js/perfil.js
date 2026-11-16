@@ -74,7 +74,7 @@ function inicializarPerfil(email) {
 }
 
 function carregarProgressoRealTrilha(email) {
-    const url = `http://localhost:8080/backend/api/trilha?email=${encodeURIComponent(email)}`;
+    const url = `https://arena-java-api.onrender.com/api/trilha?email=${encodeURIComponent(email)}`;
     fetch(url)
         .then(res => res.json())
         .then(data => {
@@ -218,7 +218,7 @@ function configurarModalEdicao(email) {
         const novoNome = inputName.value.trim();
         if (!novoNome) return;
 
-        fetch("http://localhost:8080/backend/api/perfil", {
+        fetch("https://arena-java-api.onrender.com/api/perfil", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

@@ -32,7 +32,7 @@ function montarUrlAvatarRanking(avatar, nomeFallback) {
 }
 
 function carregarDashboard(email) {
-    const url = `http://localhost:8080/backend/api/dashboard?email=${encodeURIComponent(email)}`;
+    const url = `https://arena-java-api.onrender.com/api/dashboard?email=${encodeURIComponent(email)}`;
     
     fetch(url)
         .then(response => response.json())
@@ -59,7 +59,7 @@ function carregarDashboard(email) {
 }
 
 function carregarUltimoModuloAtivo(email) {
-    const url = `http://localhost:8080/backend/api/trilha?email=${encodeURIComponent(email)}`;
+    const url = `https://arena-java-api.onrender.com/api/trilha?email=${encodeURIComponent(email)}`;
     fetch(url)
         .then(res => res.json())
         .then(data => {

@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
             btnSubmit.disabled = true;
             btnSubmit.textContent = "Conectando ao Servidor...";
 
-            fetch("http://localhost:8080/backend/api/auth", {
+            fetch("https://arena-java-api.onrender.com/api/auth", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)

@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function carregarDashboard() {
     // Busca do seu novo DashboardServlet
-    fetch("http://localhost:8080/backend/api/dashboard")
+    fetch("https://arena-java-api.onrender.com/api/dashboard")
     .then(response => response.json())
     .then(data => {
         if (data.sucesso) {
