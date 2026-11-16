@@ -12,72 +12,92 @@ import java.util.List;
 
 public class ModuloDAO {
 
+    // Busca toda a trilha do usuario em 1 unica consulta pelo e-mail
+    public List<ModuloDTO> listarTrilhaPorEmail(String email) {
+        List<ModuloDTO> modulos = new ArrayList<>();
+
+        String sql = "SELECT m.id, m.nome, m.descricao, m.xp_bonus_conclusao, " +
+                     "COUNT(DISTINCT p.id) AS total_questoes, " +
+                     "COUNT(DISTINCT CASE WHEN r.acertou = true THEN r.pergunta_id END) AS respondidas " +
+                     "FROM modulos m " +
+                     "INNER JOIN usuarios u ON u.email = ? " +
+                     "LEFT JOIN perguntas p ON p.modulo_id = m.id " +
+                     "LEFT JOIN respostas_usuarios r ON r.pergunta_id = p.id AND r.usuario_id = u.id " +
+                     "GROUP BY m.id, m.nome, m.descricao, m.xp_bonus_conclusao " +
+                     "ORDER BY m.id ASC";
+
+        try (Connection conexao = ConexaoJDBC.conectar();
+             PreparedStatement stmt = conexao.prepareStatement(sql)) {
+
+            stmt.setString(1, email);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                boolean moduloAnteriorConcluido = true; // O Módulo 1 é sempre aberto
+
+                while (rs.next()) {
+                    int totalQuestoes = rs.getInt("total_questoes");
+                    int respondidas = rs.getInt("respondidas");
+                    int notaDeCorte = (int) Math.ceil(totalQuestoes * 0.6);
+                    boolean concluido = totalQuestoes > 0 && respondidas >= notaDeCorte;
+
+                    ModuloDTO mod = new ModuloDTO();
+                    mod.setId(rs.getInt("id"));
+                    mod.setNome(rs.getString("nome"));
+                    mod.setDescricao(rs.getString("descricao"));
+                    mod.setXpBonus(rs.getInt("xp_bonus_conclusao"));
+                    mod.setTotalQuestoes(totalQuestoes);
+                    mod.setQuestoesRespondidas(respondidas);
+                    mod.setConcluido(concluido);
+                    mod.setBloqueado(!moduloAnteriorConcluido);
+
+                    modulos.add(mod);
+                    moduloAnteriorConcluido = concluido;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return modulos;
+    }
+
     public List<ModuloDTO> listarTrilhaDoUsuario(int usuarioId) {
         List<ModuloDTO> modulos = new ArrayList<>();
 
-        // 1. Remove conclusão caso algum módulo tenha menos de 60% de acertos reais
-        String sqlClean = "DELETE FROM modulos_concluidos mc " +
-                "WHERE mc.usuario_id = ? AND (" +
-                "  SELECT COUNT(DISTINCT r.pergunta_id) FROM respostas_usuarios r " +
-                "  JOIN perguntas p ON r.pergunta_id = p.id " +
-                "  WHERE p.modulo_id = mc.modulo_id AND r.usuario_id = ? AND r.acertou = true" +
-                ") < CEIL((SELECT COUNT(*) FROM perguntas p2 WHERE p2.modulo_id = mc.modulo_id) * 0.6)";
-
-        // 2. Insere conclusão automaticamente apenas se tiver >= 60% de acertos reais
-        String sqlSync = "INSERT INTO modulos_concluidos (usuario_id, modulo_id) " +
-                "SELECT ?, m.id FROM modulos m " +
-                "WHERE (SELECT COUNT(*) FROM perguntas p WHERE p.modulo_id = m.id) > 0 " +
-                "AND (SELECT COUNT(DISTINCT r.pergunta_id) FROM respostas_usuarios r JOIN perguntas p ON r.pergunta_id = p.id WHERE p.modulo_id = m.id AND r.usuario_id = ? AND r.acertou = true) " +
-                ">= CEIL((SELECT COUNT(*) FROM perguntas p WHERE p.modulo_id = m.id) * 0.6) " +
-                "AND NOT EXISTS (SELECT 1 FROM modulos_concluidos mc WHERE mc.usuario_id = ? AND mc.modulo_id = m.id)";
-
-        // 3. Conta APENAS as questões ACERTADAS (r.acertou = true) para exibir na barra da Trilha (ex: 7/10)
         String sql = "SELECT m.id, m.nome, m.descricao, m.xp_bonus_conclusao, " +
-                     "(SELECT COUNT(*) FROM perguntas p WHERE p.modulo_id = m.id) AS total_questoes, " +
-                     "(SELECT COUNT(DISTINCT r.pergunta_id) FROM respostas_usuarios r JOIN perguntas p ON r.pergunta_id = p.id WHERE p.modulo_id = m.id AND r.usuario_id = ? AND r.acertou = true) AS respondidas, " +
-                     "(SELECT COUNT(*) FROM modulos_concluidos mc WHERE mc.modulo_id = m.id AND mc.usuario_id = ?) AS concluido " +
-                     "FROM modulos m ORDER BY m.id ASC";
+                     "COUNT(DISTINCT p.id) AS total_questoes, " +
+                     "COUNT(DISTINCT CASE WHEN r.acertou = true THEN r.pergunta_id END) AS respondidas " +
+                     "FROM modulos m " +
+                     "LEFT JOIN perguntas p ON p.modulo_id = m.id " +
+                     "LEFT JOIN respostas_usuarios r ON r.pergunta_id = p.id AND r.usuario_id = ? " +
+                     "GROUP BY m.id, m.nome, m.descricao, m.xp_bonus_conclusao " +
+                     "ORDER BY m.id ASC";
 
-        try (Connection conexao = ConexaoJDBC.conectar()) {
+        try (Connection conexao = ConexaoJDBC.conectar();
+             PreparedStatement stmt = conexao.prepareStatement(sql)) {
 
-            try (PreparedStatement stmtClean = conexao.prepareStatement(sqlClean)) {
-                stmtClean.setInt(1, usuarioId);
-                stmtClean.setInt(2, usuarioId);
-                stmtClean.executeUpdate();
-            } catch (SQLException e) {
-                System.err.println("Aviso ao limpar modulos_concluidos: " + e.getMessage());
-            }
+            stmt.setInt(1, usuarioId);
 
-            try (PreparedStatement stmtSync = conexao.prepareStatement(sqlSync)) {
-                stmtSync.setInt(1, usuarioId);
-                stmtSync.setInt(2, usuarioId);
-                stmtSync.setInt(3, usuarioId);
-                stmtSync.executeUpdate();
-            } catch (SQLException e) {
-                System.err.println("Aviso ao sincronizar modulos_concluidos: " + e.getMessage());
-            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                boolean moduloAnteriorConcluido = true;
 
-            try (PreparedStatement stmt = conexao.prepareStatement(sql)) {
-                stmt.setInt(1, usuarioId);
-                stmt.setInt(2, usuarioId);
+                while (rs.next()) {
+                    int totalQuestoes = rs.getInt("total_questoes");
+                    int respondidas = rs.getInt("respondidas");
+                    int notaDeCorte = (int) Math.ceil(totalQuestoes * 0.6);
+                    boolean concluido = totalQuestoes > 0 && respondidas >= notaDeCorte;
 
-                try (ResultSet rs = stmt.executeQuery()) {
-                    boolean moduloAnteriorConcluido = true; // O Módulo 1 é sempre aberto
+                    ModuloDTO mod = new ModuloDTO();
+                    mod.setId(rs.getInt("id"));
+                    mod.setNome(rs.getString("nome"));
+                    mod.setDescricao(rs.getString("descricao"));
+                    mod.setXpBonus(rs.getInt("xp_bonus_conclusao"));
+                    mod.setTotalQuestoes(totalQuestoes);
+                    mod.setQuestoesRespondidas(respondidas);
+                    mod.setConcluido(concluido);
+                    mod.setBloqueado(!moduloAnteriorConcluido);
 
-                    while (rs.next()) {
-                        ModuloDTO mod = new ModuloDTO();
-                        mod.setId(rs.getInt("id"));
-                        mod.setNome(rs.getString("nome"));
-                        mod.setDescricao(rs.getString("descricao"));
-                        mod.setXpBonus(rs.getInt("xp_bonus_conclusao"));
-                        mod.setTotalQuestoes(rs.getInt("total_questoes"));
-                        mod.setQuestoesRespondidas(rs.getInt("respondidas"));
-                        mod.setConcluido(rs.getInt("concluido") > 0);
-                        mod.setBloqueado(!moduloAnteriorConcluido);
-
-                        modulos.add(mod);
-                        moduloAnteriorConcluido = mod.isConcluido();
-                    }
+                    modulos.add(mod);
+                    moduloAnteriorConcluido = concluido;
                 }
             }
         } catch (SQLException e) {

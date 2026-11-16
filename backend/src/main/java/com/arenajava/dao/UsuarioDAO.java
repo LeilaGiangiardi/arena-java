@@ -74,9 +74,9 @@ public class UsuarioDAO {
     public List<Usuario> listarTop5Ranking() {
         List<Usuario> lista = new ArrayList<>();
         
-        // Filtra o usuario admin direto no banco para nao aparecer no ranking
+        // IMPORTANTE: Como usamos LOWER(nome), o texto dentro do NOT IN precisa estar todo em minusculo
         String sql = "SELECT nome, cargo, xp, avatar FROM usuarios " +
-                     "WHERE LOWER(nome) NOT IN ('Admin Arena') " +
+                     "WHERE LOWER(TRIM(nome)) NOT IN ('admin', 'administrador', 'admin arena') " +
                      "AND LOWER(COALESCE(cargo, '')) NOT LIKE '%admin%' " +
                      "AND LOWER(email) NOT LIKE 'admin%' " +
                      "ORDER BY xp DESC, nome ASC";

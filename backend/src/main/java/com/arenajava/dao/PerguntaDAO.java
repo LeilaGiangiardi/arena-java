@@ -1,7 +1,6 @@
 package com.arenajava.dao;
 
 import com.arenajava.model.Pergunta;
-import com.arenajava.util.ConexaoJDBC;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -29,8 +28,7 @@ public class PerguntaDAO {
                 "WHERE p.modulo_id = ? " +
                 "ORDER BY p.id ASC";
 
-        try (Connection conn = ConexaoJDBC.conectar();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = this.conexao.prepareStatement(sql)) {
 
             stmt.setString(1, email);
             stmt.setInt(2, moduloId);
