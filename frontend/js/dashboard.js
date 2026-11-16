@@ -13,6 +13,17 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
+    // Preenche o cabeçalho imediatamente com o que já está na memória (Zero espera)
+    atualizarEstatisticaHeader({
+        nome: sessionStorage.getItem("nomeUsuario") || "Aluno",
+        xp: sessionStorage.getItem("xpUsuario") || 0,
+        cargo: sessionStorage.getItem("cargoUsuario") || "Derrubador de Servidor",
+        ofensiva: sessionStorage.getItem("ofensivaUsuario") || 0,
+        questoesAcertadas: sessionStorage.getItem("acertosUsuario") || 0,
+        totalQuestoes: sessionStorage.getItem("totalQuestoesArena") || 100,
+        dominio: sessionStorage.getItem("dominioUsuario") || "Iniciante"
+    });
+
     carregarDashboard(emailUsuario);
     carregarUltimoModuloAtivo(emailUsuario);
 });
@@ -31,76 +42,116 @@ function montarUrlAvatarRanking(avatar, nomeFallback) {
     return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(sementeLimpa)}&eyes=eva,robocop,shade01&mouth=grill01,grill02,grill03`;
 }
 
+function aplicarDadosDashboard(data) {
+    // Filtra o Admin Arena no frontend também por segurança
+    rankingGlobal = (data.ranking || []).filter(u => 
+        u.nome && !["admin", "administrador", "admin arena"].includes(u.nome.trim().toLowerCase())
+    );
+    nomeUsuarioAtual = data.estatisticas.nome;
+
+    const cargoLimpo = window.ArenaIHC ? ArenaIHC.limparEmojis(data.estatisticas.cargo) : data.estatisticas.cargo;
+
+    sessionStorage.setItem("nomeUsuario", data.estatisticas.nome);
+    sessionStorage.setItem("xpUsuario", data.estatisticas.xp);
+    sessionStorage.setItem("cargoUsuario", cargoLimpo);
+    sessionStorage.setItem("ofensivaUsuario", data.estatisticas.ofensiva);
+    sessionStorage.setItem("avatarUsuario", data.estatisticas.avatar || data.estatisticas.nome);
+    sessionStorage.setItem("acertosUsuario", data.estatisticas.questoesAcertadas);
+    sessionStorage.setItem("totalQuestoesArena", data.estatisticas.totalQuestoes);
+    sessionStorage.setItem("dominioUsuario", data.estatisticas.dominio);
+
+    atualizarEstatisticaHeader(data.estatisticas);
+
+    const top4 = rankingGlobal.slice(0, 4);
+    atualizarRanking(top4, nomeUsuarioAtual, "ranking-list");
+}
+
 function carregarDashboard(email) {
+    // 1. Se já tem no cache da sessão, mostra na tela instantaneamente!
+    const cacheSalvo = sessionStorage.getItem("cache_dashboard");
+    if (cacheSalvo) {
+        try {
+            aplicarDadosDashboard(JSON.parse(cacheSalvo));
+            return; // Não precisa buscar tudo de novo ao apenas trocar de aba
+        } catch (e) {
+            sessionStorage.removeItem("cache_dashboard");
+        }
+    }
+
+    // 2. Se for a primeira vez (ou após responder quiz), busca no servidor e salva
     const url = `https://arena-java-api.onrender.com/api/dashboard?email=${encodeURIComponent(email)}`;
-    
     fetch(url)
         .then(response => response.json())
         .then(data => {
             if (data.sucesso) {
-                rankingGlobal = data.ranking || [];
-                nomeUsuarioAtual = data.estatisticas.nome;
-
-                const cargoLimpo = window.ArenaIHC ? ArenaIHC.limparEmojis(data.estatisticas.cargo) : data.estatisticas.cargo;
-
-                sessionStorage.setItem("nomeUsuario", data.estatisticas.nome);
-                sessionStorage.setItem("xpUsuario", data.estatisticas.xp);
-                sessionStorage.setItem("cargoUsuario", cargoLimpo);
-                sessionStorage.setItem("ofensivaUsuario", data.estatisticas.ofensiva);
-                sessionStorage.setItem("avatarUsuario", data.estatisticas.avatar || data.estatisticas.nome);
-                
-                atualizarEstatisticaHeader(data.estatisticas);
-                
-                const top4 = rankingGlobal.slice(0, 4);
-                atualizarRanking(top4, nomeUsuarioAtual, "ranking-list");
+                sessionStorage.setItem("cache_dashboard", JSON.stringify(data));
+                aplicarDadosDashboard(data);
             }
         })
         .catch(error => console.error("Erro ao carregar o Dashboard:", error));
 }
 
+function aplicarAtalhoModulo(modulos) {
+    if (!modulos || modulos.length === 0) return;
+
+    const totalRespondidasNaConta = modulos.reduce((acc, m) => acc + (m.questoesRespondidas || 0), 0);
+    const ehContaRecemCriada = (totalRespondidasNaConta === 0);
+
+    let modAlvo = modulos.find(m => !m.bloqueado && !m.concluido);
+    if (!modAlvo) {
+        const desbloqueados = modulos.filter(m => !m.bloqueado);
+        modAlvo = desbloqueados[desbloqueados.length - 1] || modulos[0];
+    }
+
+    const total = modAlvo.totalQuestoes || 10;
+    const resp = modAlvo.questoesRespondidas || 0;
+    const pct = Math.min(100, Math.round((resp / total) * 100));
+
+    document.getElementById("quick-stage-badge").textContent = ehContaRecemCriada
+        ? `PRIMEIRA MISSÃO • ESTÁGIO 01`
+        : `MISSÃO ATUAL • ESTÁGIO 0${modAlvo.id}`;
+    document.getElementById("quick-progress-text").textContent = `${resp}/${total}`;
+    document.getElementById("quick-module-title").textContent = modAlvo.nome;
+    document.getElementById("quick-progress-bar").style.width = `${pct}%`;
+
+    const btnPlay = document.getElementById("btn-quick-play");
+    const btnPlayText = document.getElementById("btn-quick-play-text");
+
+    if (ehContaRecemCriada) {
+        if (btnPlayText) btnPlayText.textContent = "Jogar Agora";
+    } else if (modAlvo.concluido) {
+        if (btnPlayText) btnPlayText.textContent = "Revisar";
+    } else {
+        if (btnPlayText) btnPlayText.textContent = "Continuar";
+    }
+
+    btnPlay.onclick = () => {
+        setTimeout(() => {
+            window.location.href = `quiz.html?moduloId=${modAlvo.id}`;
+        }, 140);
+    };
+}
+
 function carregarUltimoModuloAtivo(email) {
+    // 1. Se a trilha já está salva na sessão, carrega instantaneamente!
+    const cacheTrilha = sessionStorage.getItem("cache_trilha");
+    if (cacheTrilha) {
+        try {
+            aplicarAtalhoModulo(JSON.parse(cacheTrilha));
+            return;
+        } catch (e) {
+            sessionStorage.removeItem("cache_trilha");
+        }
+    }
+
+    // 2. Se não estiver no cache, busca na API e salva para as outras abas usarem
     const url = `https://arena-java-api.onrender.com/api/trilha?email=${encodeURIComponent(email)}`;
     fetch(url)
         .then(res => res.json())
         .then(data => {
             if (!data.sucesso || !data.modulos || data.modulos.length === 0) return;
-
-            const totalRespondidasNaConta = data.modulos.reduce((acc, m) => acc + (m.questoesRespondidas || 0), 0);
-            const ehContaRecemCriada = (totalRespondidasNaConta === 0);
-
-            let modAlvo = data.modulos.find(m => !m.bloqueado && !m.concluido);
-            if (!modAlvo) {
-                const desbloqueados = data.modulos.filter(m => !m.bloqueado);
-                modAlvo = desbloqueados[desbloqueados.length - 1] || data.modulos[0];
-            }
-
-            const total = modAlvo.totalQuestoes || 10;
-            const resp = modAlvo.questoesRespondidas || 0;
-            const pct = Math.min(100, Math.round((resp / total) * 100));
-
-            document.getElementById("quick-stage-badge").textContent = ehContaRecemCriada
-                ? `PRIMEIRA MISSÃO • ESTÁGIO 01`
-                : `MISSÃO ATUAL • ESTÁGIO 0${modAlvo.id}`;
-            document.getElementById("quick-progress-text").textContent = `${resp}/${total}`;
-            document.getElementById("quick-module-title").textContent = modAlvo.nome;
-            document.getElementById("quick-progress-bar").style.width = `${pct}%`;
-
-            const btnPlay = document.getElementById("btn-quick-play");
-            const btnPlayText = document.getElementById("btn-quick-play-text");
-
-            if (ehContaRecemCriada) {
-                if (btnPlayText) btnPlayText.textContent = "Jogar Agora";
-            } else if (modAlvo.concluido) {
-                if (btnPlayText) btnPlayText.textContent = "Revisar";
-            } else {
-                if (btnPlayText) btnPlayText.textContent = "Continuar";
-            }
-
-            btnPlay.onclick = () => {
-                setTimeout(() => {
-                    window.location.href = `quiz.html?moduloId=${modAlvo.id}`;
-                }, 140);
-            };
+            sessionStorage.setItem("cache_trilha", JSON.stringify(data.modulos));
+            aplicarAtalhoModulo(data.modulos);
         })
         .catch(err => console.error("Erro ao carregar atalho de módulo:", err));
 }
@@ -113,14 +164,14 @@ function atualizarEstatisticaHeader(stats) {
     const elAcertos = document.getElementById("stat-acertos");
     const elDominio = document.getElementById("stat-dominio");
 
-    if (elNome) elNome.innerText = stats.nome;
-    if (elXp) elXp.innerText = stats.xp;
-    if (elCargo && window.ArenaIHC) {
+    if (elNome && stats.nome !== undefined) elNome.innerText = stats.nome;
+    if (elXp && stats.xp !== undefined) elXp.innerText = stats.xp;
+    if (elCargo && window.ArenaIHC && stats.cargo) {
         ArenaIHC.renderizarCargo(elCargo, stats.cargo, true);
     }
-    if (elOfensiva) elOfensiva.innerText = `${stats.ofensiva} Dias`;
-    if (elAcertos) elAcertos.innerText = `${stats.questoesAcertadas} / ${stats.totalQuestoes}`;
-    if (elDominio) elDominio.innerText = stats.dominio;
+    if (elOfensiva && stats.ofensiva !== undefined) elOfensiva.innerText = `${stats.ofensiva} Dias`;
+    if (elAcertos && stats.questoesAcertadas !== undefined) elAcertos.innerText = `${stats.questoesAcertadas} / ${stats.totalQuestoes}`;
+    if (elDominio && stats.dominio !== undefined) elDominio.innerText = stats.dominio;
 }
 
 function atualizarRanking(listaAlunos, nomeUsuarioLogado, idContainer) {

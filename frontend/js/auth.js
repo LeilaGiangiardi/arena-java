@@ -40,7 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
         btnClose.addEventListener("click", () => modal.classList.add("hidden"));
     }
 
-    // Controle do Modal de Créditos
     const fecharCreditos = () => {
         if (creditsModal) creditsModal.classList.add("hidden");
     };
@@ -115,6 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 btnSubmit.textContent = modoAtual === "login" ? "Executar Login" : "Cadastrar Calouro";
 
                 if (data.sucesso) {
+                    sessionStorage.clear();
                     sessionStorage.setItem("emailUsuario", data.email);
                     sessionStorage.setItem("nomeUsuario", data.nome);
                     sessionStorage.setItem("cargoUsuario", data.cargo);

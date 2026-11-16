@@ -1,9 +1,7 @@
 package com.arenajava.controller;
 
 import com.arenajava.dao.ModuloDAO;
-import com.arenajava.dao.UsuarioDAO;
 import com.arenajava.model.ModuloDTO;
-import com.arenajava.model.Usuario;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -17,13 +15,13 @@ import java.util.List;
 @WebServlet("/api/trilha")
 public class TrilhaServlet extends HttpServlet {
     
-    private UsuarioDAO usuarioDAO = new UsuarioDAO();
     private ModuloDAO moduloDAO = new ModuloDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
+        response.setHeader("Access-Control-Allow-Origin", "*");
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         PrintWriter out = response.getWriter();
@@ -34,11 +32,9 @@ public class TrilhaServlet extends HttpServlet {
             return;
         }
 
-        Usuario usuario = usuarioDAO.buscarPorEmail(email);
-        if (usuario != null) {
-            List<ModuloDTO> trilha = moduloDAO.listarTrilhaDoUsuario(usuario.getId());
-            
-            // Gerador de JSON Manual seguro
+        List<ModuloDTO> trilha = moduloDAO.listarTrilhaPorEmail(email);
+        
+        if (!trilha.isEmpty()) {
             StringBuilder json = new StringBuilder("{\"sucesso\": true, \"modulos\": [");
             for (int i = 0; i < trilha.size(); i++) {
                 ModuloDTO m = trilha.get(i);

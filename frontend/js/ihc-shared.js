@@ -14,12 +14,12 @@ window.ArenaIHC = (() => {
 
     // Tabela única e padronizada das 6 Patentes (usada em todo o sistema)
     const PATENTES = [
-        { match: "derrubador", nome: "Derrubador de Servidor",           minXp: 0,    icone: "ph-fill ph-lightning",       cor: "#ff3366" },
-        { match: "criador",    nome: "Criador de bugs",                  minXp: 200,  icone: "ph-fill ph-bug-beetle",      cor: "#00ff73" },
-        { match: "caçador",    nome: "Caçador de Ponto e Vírgula (;)",   minXp: 500,  icone: "ph-fill ph-crosshair",       cor: "#00f0ff" },
-        { match: "refém",      nome: "Refém da Inteligência Artificial", minXp: 1500, icone: "ph-fill ph-robot",           cor: "#b84dff" },
-        { match: "mestre",     nome: "Mestre do Stack Overflow",         minXp: 3000, icone: "ph-fill ph-terminal-window", cor: "#ff9900" },
-        { match: "compilador", nome: "Compilador Humano",                minXp: 5000, icone: "ph-fill ph-cpu",             cor: "#ffd700" }
+        { match: "derrubador", nome: "Derrubador de Servidor", minXp: 0, icone: "ph-fill ph-lightning", cor: "#ff3366" },
+        { match: "criador", nome: "Criador de bugs", minXp: 200, icone: "ph-fill ph-bug-beetle", cor: "#00ff73" },
+        { match: "caçador", nome: "Caçador de Ponto e Vírgula (;)", minXp: 500, icone: "ph-fill ph-crosshair", cor: "#00f0ff" },
+        { match: "refém", nome: "Refém da Inteligência Artificial", minXp: 1500, icone: "ph-fill ph-robot", cor: "#b84dff" },
+        { match: "mestre", nome: "Mestre do Stack Overflow", minXp: 3000, icone: "ph-fill ph-terminal-window", cor: "#ff9900" },
+        { match: "compilador", nome: "Compilador Humano", minXp: 5000, icone: "ph-fill ph-cpu", cor: "#ffd700" }
     ];
 
     function limparEmojis(texto) {
@@ -139,7 +139,7 @@ window.ArenaIHC = (() => {
         };
 
         if (ctx.state === "suspended") {
-            ctx.resume().then(triggerOscillators).catch(() => {});
+            ctx.resume().then(triggerOscillators).catch(() => { });
         } else {
             triggerOscillators();
         }
@@ -332,9 +332,13 @@ window.ArenaIHC = (() => {
                         const isLogout = icon.classList.contains("logout-icon");
                         icon.removeAttribute("onclick");
                         icon.addEventListener("click", () => {
-                            setTimeout(() => {
+                            if (isLogout) {
+                                sessionStorage.clear();
+                                setTimeout(() => { window.location.href = targetUrl; }, 180);
+                            } else {
+                                // Troca de aba imediata sem atraso
                                 window.location.href = targetUrl;
-                            }, isLogout ? 220 : 140);
+                            }
                         });
                     }
                 }

@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("user-xp").textContent = sessionStorage.getItem("xpUsuario") || 0;
 
     const elCargo = document.getElementById("user-cargo");
-    if (elCargo) {
+    if (elCargo && window.ArenaIHC) {
         const cargoSalvo = sessionStorage.getItem("cargoUsuario") || "Derrubador de Servidor";
         ArenaIHC.renderizarCargo(elCargo, cargoSalvo, true);
     }
@@ -31,19 +31,36 @@ const CARTUCHOS_CONFIG = {
     10: { stage: "FINAL BOSS", sub: "FILES & INTERFACES", tema: "cyan" }
 };
 
+function processarERenderizarTrilha(listaModulos, email) {
+    const isAdmin = (email.trim().toLowerCase() === EMAIL_ADMIN);
+    const modulos = listaModulos.map(mod => ({
+        ...mod,
+        bloqueado: isAdmin ? false : mod.bloqueado
+    }));
+    renderizarCards(modulos);
+}
+
 function carregarTrilha(email) {
+    // 1. Se a trilha já foi carregada na sessão, exibe os cartuchos instantaneamente!
+    const cacheTrilha = sessionStorage.getItem("cache_trilha");
+    if (cacheTrilha) {
+        try {
+            processarERenderizarTrilha(JSON.parse(cacheTrilha), email);
+            return;
+        } catch (e) {
+            sessionStorage.removeItem("cache_trilha");
+        }
+    }
+
+    // 2. Só faz requisição se ainda não estiver salvo na memória
     const url = `https://arena-java-api.onrender.com/api/trilha?email=${encodeURIComponent(email)}`;
 
     fetch(url)
         .then(response => response.json())
         .then(data => {
-            if (data.sucesso) {
-                const isAdmin = (email.trim().toLowerCase() === EMAIL_ADMIN);
-                const modulos = data.modulos.map(mod => ({
-                    ...mod,
-                    bloqueado: isAdmin ? false : mod.bloqueado
-                }));
-                renderizarCards(modulos);
+            if (data.sucesso && data.modulos) {
+                sessionStorage.setItem("cache_trilha", JSON.stringify(data.modulos));
+                processarERenderizarTrilha(data.modulos, email);
             }
         })
         .catch(error => console.error("Erro na requisição Fetch:", error));

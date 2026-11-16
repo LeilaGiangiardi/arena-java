@@ -378,6 +378,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 const novoCargoLimpo = window.ArenaIHC ? ArenaIHC.limparEmojis(data.novoCargo) : data.novoCargo;
                 sessionStorage.setItem("xpUsuario", data.novoXp);
                 sessionStorage.setItem("cargoUsuario", novoCargoLimpo);
+                // Limpa o cache para que o Dashboard e a Trilha mostrem o novo XP e módulos desbloqueados
+                sessionStorage.removeItem("cache_dashboard");
+                sessionStorage.removeItem("cache_trilha");
+                
                 if (elXp) elXp.innerText = data.novoXp;
                 if (elCargo && window.ArenaIHC) {
                     ArenaIHC.renderizarCargo(elCargo, novoCargoLimpo, true);
