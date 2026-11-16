@@ -1,62 +1,107 @@
-🎮 Arena Java — Plataforma Gamificada de Ensino de Programação"System.out.play("Arena Java");"Fuja do título de Criador de Bugs 🐛, acumule XP na trilha de cartuchos 16-bit e prove que você é o Compilador Humano 🧠 da turma.📌 ÍndiceSobre o ProjetoPrincipais Funcionalidades & GamificaçãoTrilha Pedagógica (10 Módulos / 100 Questões)Arquitetura do Sistema e Stack TecnológicaEngenharia de Interface (IHM / UI & UX)Modelagem do Banco de Dados (PostgreSQL)Documentação da API RESTful (Servlets)Estrutura de DiretóriosComo Executar o Projeto LocalmenteCredenciais de Teste (Modo Admin)🚀 1. Sobre o ProjetoO Arena Java é uma plataforma web educacional Full-Stack gamificada (inspirada na mecânica de progressão do Duolingo e na estética retrô de consoles 16-bit e Cyberpunk) projetada para calouros e estudantes de Sistemas de Informação (BSI) e cursos de Computação.O objetivo central da plataforma é transformar o aprendizado de Lógica de Programação e Programação Orientada a Objetos (POO) em Java em uma jornada interativa baseada em missões, testes de mesa, desafios práticos de código validados por Expressões Regulares (Regex) e competição saudável por meio de um Ranking Global em tempo real.🏆 2. Principais Funcionalidades & Gamificação🎯 Motor de Quiz Híbrido e AntifraudeQuestões Teóricas e Testes de Mesa (tipo_pergunta = 1): Múltipla escolha interativa com análise de snippets de código, timer regressivo de 45 segundos e suporte completo a atalhos de teclado (1, 2, 3, 4 e Enter).Desafios "Chefão Final" (tipo_pergunta = 2): A 10ª questão de cada módulo exige que o aluno digite a instrução ou sintaxe Java exata em um terminal de código. A validação ocorre utilizando Expressões Regulares (validacao_regex) tolerantes a variações seguras de espaçamento.Persistência Real & Trava Antifraude (Server-Side): Cada questão respondida dispara uma transação POST imediata para o banco de dados. O backend cruza as perguntas do módulo com a tabela respostas_usuarios via LEFT JOIN e classifica cada questão em três estados:0 (Inédita): Ainda não respondida pelo aluno.10 (Com Bug / Erro): Respondida incorretamente (habilita revisão).20 (Dominada / Acerto): Respondida corretamente (bloqueada contra farm duplicado de XP).Sistema Inteligente de Revisão de Erros: Se o aluno encerrar um módulo com erros, o relatório final persiste seu desempenho real no PostgreSQL e disponibiliza o modo "🔄 Revisar Questões que Errei", filtrando exclusivamente as perguntas pendentes até atingir os 100% de domínio.🔓 Regra de Desbloqueio Progressivo (Nota de Corte de 60%)O Módulo 1 inicia aberto para todos os jogadores.Para desbloquear o módulo seguinte na trilha, o aluno deve atingir pelo menos 60% de aproveitamento real ($\ge 6$ acertos em 10 questões) no módulo atual.A sincronização de desbloqueio é garantida diretamente no banco de dados (ModuloDAO e UsuarioDAO), avaliando dinamicamente $\lceil \text{total\_questoes} \times 0.6 \rceil$.🔥 Ofensiva Diária (Streak), XP e PenalidadesRecompensa por Acerto: Cada pergunta concede entre +10 XP e +100 XP conforme o nível de complexidade e se trata de um Chefão.Penalidade por Bug: Respostas incorretas ou estouro de tempo aplicam -5 XP (respeitando o piso mínimo de 0 XP via GREATEST(0, xp + ?) no SQL) e exibem um modal de Feedback Formativo explicando o conceito por trás do erro.Ofensiva (Streak): O sistema registra a data da última atividade (ultima_atividade) e incrementa automaticamente os dias seguidos de estudo no primeiro envio do dia.🎖️ Sistema de Patentes (Hierarquia da Arena)Conforme o jogador acumula XP, seu cargo é promovido automaticamente em toda a plataforma:Patente / CargoRequisito MínimoDescrição na Arena💥 Derrubador de Servidor0 XPAcabou de instalar a JDK e já causou o primeiro NullPointerException.🐛 Criador de bugs200 XPDomina variáveis e condicionais, mas às vezes esquece o break no switch.🔍 Caçador de Ponto e Vírgula (;)500 XPJá faz testes de mesa com while e for sem cair em loop infinito.🤖 Refém da Inteligência Artificial1500 XPCria classes, construtores e encapsulamento, entendendo o que acontece na Heap.🧙‍♂️ Mestre do Stack Overflow3000 XPDomina Composição, Enumerações, Herança, Polimorfismo e try-catch.🧠 Compilador Humano5000 XPBate o olho no código, compila mentalmente e já sabe a saída antes mesmo de rodar.📚 3. Trilha Pedagógica (10 Módulos / 100 Questões)O banco de dados conta com 100 questões autorais estruturadas em formato de escada de dificuldade (baseadas na ementa oficial de Programação e POO em Java do Prof. Dr. Nélio Alves):STAGE 01 (CPU & JVM) — Fundamentos e Estrutura Sequencial: Algoritmos, automação, modelo híbrido de compilação/interpretação (Bytecode/JVM), variáveis, tipos primitivos, precedência aritmética, casting, Scanner, Locale, printf e Math.STAGE 02 (IF / ELSE) — Estruturas Condicionais: Expressões comparativas, operadores lógicos (&&, ||, !), if-else encadeado, operadores cumulativos (+=), switch-case, operador ternário e escopo de variáveis.STAGE 03 (LOOPS) — Laços de Repetição e Debug: Execução passo a passo (Debugger / Breakpoints), estruturas while, for e do-while, contagens regressivas e testes de mesa com acumuladores.STAGE 04 (STRINGS & FN) — Tópicos Básicos, Strings e Funções: Convenções camelCase e PascalCase, operadores bitwise (&, |, ^), métodos de String (trim, substring, replace, indexOf, split, toUpperCase) e modularização com funções.STAGE 05 (CLASSES POO) — Introdução à POO e Membros Estáticos: Classes vs. Objetos, alocação dinâmica na memória (Stack vs. Heap), coesão e delegação, classe Object, toString() e membros static.STAGE 06 (ENCAPSULAMENTO) — Construtores, Sobrecarga e Encapsulamento: Construtores customizados, referência this, sobrecarga (Overloading), padrão JavaBeans (Getters e Setters) e modificadores de acesso (private, package-private, protected, public).STAGE 07 (DATE & ENUM) — Data-Hora, Enumerações e Composição: API moderna java.time (LocalDate, LocalDateTime, Instant padrão ISO 8601 / UTC, Duration), tipos enum (valueOf), arquitetura em camadas e associação todo-parte (Composição e StringBuilder).STAGE 08 (HERANCA) — Herança e Polimorfismo: Relação "é-um" (extends), chamada super(), Upcasting e Downcasting com instanceof, sobrescrita (@Override), modificador final, classes/métodos abstract e Polimorfismo.STAGE 09 (EXCEPTIONS) — Tratamento de Exceções: Hierarquia Throwable (Exception Checked vs. RuntimeException Unchecked), pilha de chamadas (Stack Trace), blocos try-catch-finally, diferença entre throw e throws e exceções personalizadas de domínio.FINAL BOSS (FILES & INTERFACES) — Manipulação de Arquivos e Interfaces: Leitura e escrita com FileReader, BufferedReader, FileWriter, BufferedWriter, bloco try-with-resources, contratos com interface (implements), Injeção de Dependência, Comparable<T> e Default Methods.🛠️ 4. Arquitetura do Sistema e Stack TecnológicaO projeto adota uma arquitetura Cliente-Servidor Desacoplada organizada em Mono-repo, comunicando-se exclusivamente via requisições HTTP assíncronas (Fetch API) com payloads em formato JSON.┌─────────────────────────────────────────────────────────────────────────┐
-│                         FRONTEND (Cliente Web)                          │
-│  HTML5 (<template> + SVG Sprites)  │  CSS3 (100vh Grid)  │  Vanilla JS  │
-└────────────────────────────────────┬────────────────────────────────────┘
-                                     │ HTTP / JSON (Fetch API + CORS)
-                                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                     BACKEND (Apache Tomcat 10.1+)                       │
-│  Controllers (Jakarta Servlets) ──► DAOs (JDBC Transacional) ──► Models │
-└────────────────────────────────────┬────────────────────────────────────┘
-                                     │ TCP/IP (PostgreSQL Driver)
-                                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    BANCO DE DADOS (PostgreSQL 15+)                      │
-│     usuarios │ modulos │ perguntas │ respostas_usuarios │ concluidos    │
-└─────────────────────────────────────────────────────────────────────────┘
-Tecnologias UtilizadasBack-end:Java 17+ (compatível com JDK 17 e 21)Jakarta Servlet API 6.0 (jakarta.servlet.* — mapeamento via @WebServlet)JDBC (Java Database Connectivity): Persistência relacional pura utilizando PreparedStatement, controle manual de transações (setAutoCommit(false), commit(), rollback()) e Try-with-Resources.Google Gson: Serialização e desserialização de objetos Java e DTOs para JSON.Apache Maven: Gerenciamento de dependências e empacotamento .war.Banco de Dados:PostgreSQL: Banco de dados relacional com integridade referencial (ON DELETE CASCADE), restrições de unicidade (UNIQUE) e subconsultas analíticas em tempo real.Front-end:HTML5 Semântico: Uso de tags <template> para separação estrita entre marcação e lógica JavaScript, além de biblioteca interna de <svg><symbol> para renderização de Pixel Art vetorial.CSS3 Puro (Custom Properties + Grid/Flexbox): Design responsivo travado em 100vh (zero rolagem vertical), variáveis dinâmicas por estágio (data-theme) e animações leves aceleradas por hardware.JavaScript Vanilla (ES6+): Consumo de APIs com fetch, manipulação limpa do DOM via clonagem de templates e gerenciamento de estado em sessionStorage.DiceBear Bottts API & Phosphor Icons: Sistema customizado de 15 avatares Mechs/Cyberpunk com visores táticos e iconografia vetorial.🎨 5. Engenharia de Interface (IHM / UI & UX)Durante o desenvolvimento, a interface passou por um rigoroso processo de refinamento de Interação Humano-Computador (IHM):Design Zero-Scroll (100vh Viewport Fit): Tanto o Dashboard, quanto a Trilha de Missões (grade 5x2 com proporção de card vertical) e a Tela de Perfil foram projetados com CSS Grid elástico para se encaixarem perfeitamente em 100% da janela do navegador sem necessidade de barra de rolagem.Estética de Cartuchos Retrô 16-Bit: Os 10 módulos são representados como cartuchos clássicos de videogame com malha quadriculada estilo CRT, etiqueta de estágio (STAGE 01 a FINAL BOSS) e ícones em Pixel Art renderizados via SVG nativo.Pop-up de Missão Instantâneo: Substituição de menus laterais pesados por um modal central leve (0.12s), exibindo a prévia do cartucho, barra de progresso, meta de 60% e atalhos rápidos (Enter para iniciar a missão e Esc para fechar).Separação Estrita de Responsabilidades (Clean Front-end): Nenhum HTML ou CSS inline é gerado dentro do arquivo trilha.js; toda a estrutura visual reside no trilha.html (<template>) e no css/style.css.🗄️ 6. Modelagem do Banco de Dados (PostgreSQL)O esquema relacional (database/schema.sql) é composto por 5 tabelas principais:usuarios: Armazena id, nome, email (único), senha_hash, xp, cargo, ofensiva, ultima_atividade, questoes_acertadas, total_questoes (padrão 100), dominio e avatar.modulos: Armazena id, nome, descricao e xp_bonus_conclusao.perguntas: Armazena id, modulo_id (FK), nivel (1 a 4), tipo_pergunta (1 = Múltipla Escolha, 2 = Chefão Regex), enunciado, codigo_snippet, opcao_a, opcao_b, opcao_c, opcao_d, resposta_correta, validacao_regex, feedback_erro e xp_recompensa.respostas_usuarios: Tabela histórica e antifraude contendo usuario_id (FK), pergunta_id (FK), acertou (BOOLEAN) e respondido_em, blindada pela constraint UNIQUE(usuario_id, pergunta_id).modulos_concluidos: Registra os módulos em que o aluno atingiu $\ge 60\%$ de acertos (usuario_id, modulo_id, concluido_em), destravando o próximo nível da trilha.📡 7. Documentação da API RESTful (Servlets)Todos os endpoints suportam CORS (Access-Control-Allow-Origin: *) e operam com codificação application/json; charset=UTF-8:MétodoEndpointServlet ResponsávelDescriçãoPOST/api/authAuthServletRealiza autenticação (acao: "login") ou criação de conta (acao: "cadastrar").GET/api/dashboard?email={email}DashboardServletRetorna as estatísticas atualizadas do jogador (XP, ofensiva, acertos/100) e o Ranking Global ordenado por XP.GET/api/trilha?email={email}TrilhaServletSincroniza e retorna os 10 módulos com total de questões, acertos reais e flags concluido e bloqueado.GET/api/quiz?moduloId={id}&email={email}QuizServletRetorna as 10 perguntas do módulo com o status individual do aluno (0 inédita, 10 erro, 20 acerto).POST/api/progressoProgressoServletRegistra ou atualiza a resposta da questão, calcula variação de XP (+XP ou -5), recalcula patente e verifica conclusão de 60% do módulo.POST/api/perfilPerfilServletAtualiza o nome de exibição e o código do avatar tático escolhido pelo jogador.📂 8. Estrutura de Diretóriosarena-java-v2/
+<div align="center">
+
+# ☕ `<Arena Java/>` 🎮
+### Plataforma Web Gamificada para o Ensino de Algoritmos e Programação Orientada a Objetos em Java
+
+![Java](https://img.shields.io/badge/Java-17-f89820?style=for-the-badge&logo=openjdk&logoColor=white)
+![Jakarta EE](https://img.shields.io/badge/Jakarta_EE-Tomcat_10-00a8ff?style=for-the-badge&logo=apachetomcat&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon_Serverless-336791?style=for-the-badge&logo=postgresql&logoColor=white)
+![Frontend](https://img.shields.io/badge/Frontend-HTML5_%7C_CSS3_%7C_JS_ES6-00f0ff?style=for-the-badge&logo=javascript&logoColor=black)
+![Docker](https://img.shields.io/badge/Docker-Multi--Stage-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![IHC/IHM](https://img.shields.io/badge/Design-IHC_%2F_IHM_Centrado_no_Usu%C3%A1rio-d500f9?style=for-the-badge)
+
+</div>
+
+---
+
+## 📖 1. Sobre o Projeto
+
+O **Arena Java** é uma plataforma educacional web gamificada com estética **Cyberpunk Neon & Console Retrô 16-Bit**, desenvolvida para auxiliar estudantes de computação no domínio progressivo da linguagem **Java** e do paradigma de **Programação Orientada a Objetos (POO)**.
+
+O projeto une a **Engenharia de Software** (arquitetura cliente-servidor desacoplada em camadas com persistência relacional) aos fundamentos de **Interface Homem-Máquina (IHM / IHC)**, transformando listas de exercícios tradicionais em uma jornada interativa de **10 estágios (100 questões)** com feedback pedagógico imediato, desafios práticos de codificação (*Boss Fights*), sintetizador sonoro 8-bit nativo e ranking competitivo em tempo real.
+
+---
+
+## ✨ 2. Princípios de IHM / IHC Implementados
+
+Toda a interface foi projetada e refatorada com base na literatura clássica de Interação Humano-Computador (**Donald Norman**, **Jakob Nielsen**, **Roger Pressman** e **Rocha & Baranauskas**):
+
+* **Visibilidade e Foco sem Rolagem (`100vh` App-Like):** Telas de Dashboard, Trilha e Perfil dimensionadas para caber integralmente na janela desktop sem barras de rolagem desnecessárias, reduzindo a carga cognitiva (Heurística #8 de Nielsen).
+* **Affordance e Prevenção de Falsa Affordance (Norman):** Diferenciação visual rigorosa entre botões interativos (preenchimento sólido, *hover* luminoso e som) e *badges* puramente informativas (borda tracejada e cursor padrão). Cartuchos bloqueados exibem `cursor: not-allowed` e filtro monocromático.
+* **Complacência e Prevenção de Erros:**
+  * **Validador Preventivo de Sintaxe no Chefão:** Antes de submeter o código ao servidor, o sistema verifica se o aluno esqueceu ponto e vírgula (`;`) ou parênteses abertos, emitindo um alerta construtivo **sem descontar XP e sem gastar a tentativa**.
+  * **Detector de Caps Lock em Tempo Real:** Alerta imediato nos campos de senha e na IDE do Chefão caso a tecla `Caps Lock` esteja ativa (`getModifierState("CapsLock")`).
+  * **Confirmação ao Sair (`Esc`):** Modal de segurança ao pausar uma missão, informando claramente que o progresso já respondido está salvo no banco de dados.
+* **Passividade e Personalização (Controle do Usuário):** Painel de Preferências (`Ctrl + /`) dividido em abas com *Toggle Switches* para ativar/desativar **Efeitos Sonoros 8-Bit**, **Cronômetro Visual** e **Animação de Tremor (*Shake*)**, além da escolha entre o tema **Cyberpunk Neon** e o tema **Cinza Neutro (IDE Clássica)**.
+* **Flexibilidade e Aceleradores de Teclado (Cubo de Nielsen):** Suporte completo para usuários novatos (mouse) e experientes (atalhos `[1]` a `[4]` para alternativas, `[Enter]` para confirmar/avançar, `[Esc]` para pausar/fechar e `[Ctrl + /]` para abrir os ajustes).
+* **Estímulo Multissensorial (Web Audio API):** Sintetizador de áudio 8-bit/16-bit nativo (zero arquivos `.mp3` externos) gerando ondas *triangle*, *sine*, *square* e *sawtooth* em tempo real para cliques, navegação, digitação em estilo terminal, vitória, *level up*, erro/bug e *power-down* ao sair.
+
+---
+
+## 🕹️ 3. Mecânicas de Gamificação e Regras de Negócio
+
+### 🗺️ A Trilha dos 10 Cartuchos (100 Questões + 10 Chefões)
+Cada estágio é representado por um **Cartucho Retrô 16-Bit** renderizado em Pixel Art vetorial (`SVG crispEdges`) e contém **9 questões de múltipla escolha** + **1 questão Chefão (Boss Fight)** onde o jogador digita código Java avaliado por **Expressões Regulares (Regex)** no servidor:
+
+| Estágio | Etiqueta do Cartucho | Módulo de Aprendizagem | Foco Técnico | Bônus de Conclusão |
+| :---: | :---: | :--- | :--- | :---: |
+| **01** | `STAGE 01 • CPU & JVM` | **Fundamentos e Variáveis** | Algoritmos, Bytecode, JVM, tipos primitivos, `Scanner` e `Math` | `+100 XP` |
+| **02** | `STAGE 02 • IF / ELSE` | **Estruturas Condicionais** | Operadores lógicos, `if-else`, `switch-case`, escopo e ternário | `+150 XP` |
+| **03** | `STAGE 03 • LOOPS` | **Laços de Repetição** | `while`, `for`, `do-while`, acumuladores e depuração (*Debug*) | `+200 XP` |
+| **04** | `STAGE 04 • STRINGS & FN` | **Strings, Vetores e Funções** | Manipulação de `String`, arrays indexados e modularização | `+250 XP` |
+| **05** | `STAGE 05 • POO CORE` | **Introdução à POO** | Classes, Objetos, atributos, métodos, `this` e construtores | `+300 XP` |
+| **06** | `STAGE 06 • PRIVATE` | **Encapsulamento** | Modificadores de acesso, `getters/setters` e proteção de estado | `+350 XP` |
+| **07** | `STAGE 07 • DATE & ENUM` | **Data-Hora, Enum e Composição** | `LocalDate`, `Instant`, enumerações e associação de objetos | `+400 XP` |
+| **08** | `STAGE 08 • EXTENDS` | **Herança e Polimorfismo** | `extends`, `super`, `@Override`, *Upcasting* e *Downcasting* | `+450 XP` |
+| **09** | `STAGE 09 • TRY / CATCH` | **Tratamento de Exceções** | Pilha de chamadas, blocos `try-catch-finally` e exceções customizadas | `+500 XP` |
+| **10** | `STAGE 10 • INTERFACES` | **Arquivos e Interfaces** | `File`, `BufferedReader`, contratos `interface` e baixo acoplamento | `+600 XP` |
+
+### 🏆 Sistema de Patentes (Cargos)
+Conforme o aluno acumula XP resolvendo desafios, sua patente evolui automaticamente em todas as telas e no Ranking Global BSI:
+
+| Ícone | Patente (Cargo) | XP Mínimo | Cor de Destaque |
+| :---: | :--- | :---: | :---: |
+| ⚡ | **Derrubador de Servidor** | `0 XP` | `#ff3366` (Vermelho Neon) |
+| 🪲 | **Criador de bugs** | `200 XP` | `#00ff73` (Verde Matrix) |
+| 🎯 | **Caçador de Ponto e Vírgula (;)** | `500 XP` | `#00f0ff` (Ciano) |
+| 🤖 | **Refém da Inteligência Artificial** | `1.500 XP` | `#b84dff` (Roxo Neon) |
+| 💻 | **Mestre do Stack Overflow** | `3.000 XP` | `#ff9900` (Laranja Java) |
+| 🧠 | **Compilador Humano** | `5.000 XP` | `#ffd700` (Ouro) |
+
+### ⚖️ Progressão, Sistema Anti-Chute e Modo Revisão
+1. **Regra de Desbloqueio (Média de 60%):** O Estágio 01 inicia aberto. Para desbloquear o próximo cartucho, o aluno deve acertar pelo menos **6 das 10 questões (60%)** do módulo atual.
+2. **Sistema Anti-Chute:** Questões inéditas concedem de **+10 a +100 XP**. Errar uma questão inédita aplica uma penalidade de **-5 XP** (o saldo total nunca fica abaixo de `0 XP`) e exibe a explicação técnica detalhada do erro.
+3. **Repescagem Inteligente:** Caso o aluno finalize a tentativa sem atingir os 60%, o sistema reabre apenas as questões que ele errou para que possa aprender e destravar a fase sem refazer o que já dominou.
+4. **Modo Revisão Transparente:** Ao rejogar um módulo já concluído, o topo do Quiz exibe a insígnia **`MODO REVISÃO (Sem perda de XP)`**, permitindo treinar livremente sem alterar a pontuação do ranking.
+
+---
+
+## 🏗️ 4. Arquitetura e Stack Tecnológica
+
+```text
+arena-java/
 ├── database/
-│   ├── schema.sql                  # Criação das tabelas relacionais e constraints
-│   └── seed_trilha_completa.sql    # População dos 10 módulos e 100 questões oficiais
-├── backend/
-│   ├── pom.xml                     # Configuração Maven (Jakarta EE, Gson, PostgreSQL Driver)
+│   └── schema.sql                 # DDL das 5 tabelas + Seed dos 10 módulos, 100 questões e Admin
+├── backend/                       # API RESTful em Java 17 + Jakarta EE 10 (Maven + Docker)
+│   ├── Dockerfile                 # Build Multi-Stage (Maven JDK 17 -> Apache Tomcat 10.1)
+│   ├── pom.xml                    # Dependências: Jakarta Servlet API 6.0, PostgreSQL JDBC, Gson
 │   └── src/main/java/com/arenajava/
-│       ├── controller/
-│       │   ├── AuthServlet.java
-│       │   ├── DashboardServlet.java
-│       │   ├── PerfilServlet.java
-│       │   ├── ProgressoServlet.java
-│       │   ├── QuizServlet.java
-│       │   └── TrilhaServlet.java
-│       ├── dao/
-│       │   ├── ModuloDAO.java
-│       │   ├── PerguntaDAO.java
-│       │   └── UsuarioDAO.java
-│       ├── model/
-│       │   ├── ModuloDTO.java
-│       │   ├── Pergunta.java
-│       │   └── Usuario.java
-│       └── util/
-│           └── ConexaoJDBC.java    # Factory de conexão com o PostgreSQL
-└── frontend/
-    ├── index.html                  # Landing Page Cyberpunk & Modal de Login/Cadastro
-    ├── dashboard.html              # Painel de Desempenho e Ranking Global BSI
-    ├── trilha.html                 # Grade 5x2 de Cartuchos Retrô 16-bit e Pop-up de Missão
-    ├── quiz.html                   # Interface de Jogo, Timer, Mini-IDE e Relatório de Otimização
-    ├── perfil.html                 # Identidade do Jogador, Seletor de Avatares e Patentes
+│       ├── controller/            # Servlets: Auth, Dashboard, Trilha, Quiz, Progresso e Perfil
+│       ├── dao/                   # Persistência JDBC pura: UsuarioDAO, ModuloDAO, PerguntaDAO
+│       ├── model/                 # Entidades e DTOs: Usuario, ModuloDTO, Pergunta, RankingDTO
+│       └── util/                  # ConexaoJDBC (Env Vars + Fallback Local) e CorsFilter
+└── frontend/                      # Aplicação Web Cliente (HTML5, CSS3, Vanilla JS)
+    ├── index.html                 # Landing Page Cyberpunk, Login/Cadastro e Modal de Créditos
+    ├── dashboard.html             # Painel de Desempenho, Missão Atual e Ranking Global com Filtros
+    ├── trilha.html                # Grid 5x2 de Cartuchos 16-Bit e Modal de Detalhes da Missão
+    ├── quiz.html                  # Arena de Questões, IDE do Chefão com Dicas e Relatório Final
+    ├── perfil.html                # Identidade do Jogador, Seletor de Avatares e Trilha de Patentes
     ├── css/
-    │   └── style.css               # Folha de estilo unificada (100vh Layout & Tema Retrô/Neon)
+    │   └── style.css              # Design System unificado, animações, Toggle Switches e Temas
     └── js/
-        ├── auth.js                 # Lógica de login, cadastro e sessão
-        ├── dashboard.js            # Consumo do Dashboard, Ranking e filtro de busca
-        ├── trilha.js               # Renderização de cartuchos via <template> e controle de modal
-        ├── quiz.js                 # Motor do quiz, validação Regex, revisão de erros e atalhos
-        └── perfil.js               # Edição de perfil, seletor de 15 avatares sérios e patentes
-⚙️ 9. Como Executar o Projeto LocalmentePré-requisitosJDK 17 ou superior instalado e configurado no PATH.Apache Maven (3.8+).PostgreSQL (14+ ou 15+) rodando localmente (porta padrão 5432).Apache Tomcat (10.1+, compatível com Jakarta EE 9/10).Passo 1: Configurar o Banco de DadosCrie um banco de dados no PostgreSQL (via pgAdmin ou terminal psql) chamado arena_java (ou o nome configurado na sua classe ConexaoJDBC.java).Execute o script de estrutura de tabelas:\i database/schema.sql
-Execute o script de população com os 10 módulos e 100 questões:\i database/seed_trilha_completa.sql
-Passo 2: Configurar Credenciais JDBC e Compilar o Back-endVerifique o usuário e a senha do seu PostgreSQL no arquivo backend/src/main/java/com/arenajava/util/ConexaoJDBC.java.Abra o terminal na pasta backend/ e execute o build do Maven:cd backend
-mvn clean install
-O arquivo backend.war (ou demo.war) será gerado dentro da pasta backend/target/.Passo 3: Deploy no Tomcat e Execução do Front-endImplante o pacote .war no seu Apache Tomcat sob o contexto /backend (disponível em http://localhost:8080/backend).Sirva a pasta frontend/ utilizando a extensão Live Server do VS Code (ou copie os arquivos estáticos para o diretório webapp do projeto).Acesse http://localhost:5500/index.html (ou http://localhost:8080/backend/index.html) no navegador.🔑 10. Credenciais de Teste (Modo Admin)Para facilitar a avaliação de banca, testes de interface e navegação livre pelos 10 módulos sem precisar responder sequencialmente todas as fases anteriores, você pode inserir o usuário Administrador no PostgreSQL:INSERT INTO usuarios (nome, email, senha_hash, xp, cargo, ofensiva, avatar)
-VALUES ('Admin Arena', 'admin@java.com', '123', 9999, 'Compilador Humano 🧠', 99, 'bottts:Omega')
-ON CONFLICT (email) DO NOTHING;
-E-mail de Teste: admin@java.comSenha: 123Comportamento Especial: Ao autenticar com admin@java.com, o sistema libera automaticamente o cadeado de todos os 10 estágios na tela da Trilha (trilha.js), mantendo as questões abertas para experimentação imediata.
+        ├── ihc-shared.js          # Motor de Áudio 8-Bit Global, Favicon SVG, Patentes e Ajustes
+        ├── auth.js                # Autenticação, Cadastro, Caps Lock Alert e Modal de Créditos
+        ├── dashboard.js           # Métricas do Aluno, Atalho Inteligente e Busca/Filtro de Ranking
+        ├── trilha.js              # Renderização dos Cartuchos, Cadeados e Modo Admin
+        ├── quiz.js                # Motor do Quiz, Cronômetro, Validador Sintático e Feedback
+        └── perfil.js              # Edição de Perfil, Avatares DiceBear Bottts e Barra de Carreira
