@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UsuarioDAO {
 
@@ -35,8 +37,7 @@ public class UsuarioDAO {
         // Calcula em tempo real os acertos reais e o total de perguntas da Arena (100)
         String sql = "SELECT u.*, " +
                 "(SELECT COUNT(*) FROM perguntas) AS total_perguntas_arena, " +
-                "(SELECT COUNT(DISTINCT r.pergunta_id) FROM respostas_usuarios r WHERE r.usuario_id = u.id AND r.acertou = true) AS acertos_reais "
-                +
+                "(SELECT COUNT(DISTINCT r.pergunta_id) FROM respostas_usuarios r WHERE r.usuario_id = u.id AND r.acertou = true) AS acertos_reais " +
                 "FROM usuarios u WHERE u.email = ?";
         Usuario usuario = null;
 
@@ -70,9 +71,15 @@ public class UsuarioDAO {
         return usuario;
     }
 
-    public java.util.List<Usuario> listarTop5Ranking() {
-        java.util.List<Usuario> lista = new java.util.ArrayList<>();
-        String sql = "SELECT nome, cargo, xp, avatar FROM usuarios ORDER BY xp DESC, nome ASC";
+    public List<Usuario> listarTop5Ranking() {
+        List<Usuario> lista = new ArrayList<>();
+        
+        // Filtra o usuario admin direto no banco para nao aparecer no ranking
+        String sql = "SELECT nome, cargo, xp, avatar FROM usuarios " +
+                     "WHERE LOWER(nome) NOT IN ('Admin Arena') " +
+                     "AND LOWER(COALESCE(cargo, '')) NOT LIKE '%admin%' " +
+                     "AND LOWER(email) NOT LIKE 'admin%' " +
+                     "ORDER BY xp DESC, nome ASC";
 
         try (Connection conexao = ConexaoJDBC.conectar();
                 PreparedStatement stmt = conexao.prepareStatement(sql);
@@ -94,25 +101,27 @@ public class UsuarioDAO {
 
     public String registrarRespostaQuestao(String email, int perguntaId, int xpVariacao, String novoCargo,
             boolean acertou) {
-        String sqlUsuarioId = "SELECT id FROM usuarios WHERE email = ?";
-        String sqlCheckResposta = "SELECT acertou FROM respostas_usuarios WHERE usuario_id = ? AND pergunta_id = ?";
+        
+        // OTIMIZADO: Busca o ID do usuario e checa se a pergunta ja foi respondida em 1 unica consulta
+        String sqlBuscaUsuarioEResposta = "SELECT u.id, r.acertou " +
+                "FROM usuarios u " +
+                "LEFT JOIN respostas_usuarios r ON r.usuario_id = u.id AND r.pergunta_id = ? " +
+                "WHERE u.email = ?";
+
         String sqlInsertResposta = "INSERT INTO respostas_usuarios (usuario_id, pergunta_id, acertou) VALUES (?, ?, ?)";
         String sqlUpdateResposta = "UPDATE respostas_usuarios SET acertou = ?, respondido_em = CURRENT_TIMESTAMP WHERE usuario_id = ? AND pergunta_id = ?";
 
         String sqlUpdateXP = "UPDATE usuarios SET " +
                 "xp = GREATEST(0, xp + ?), cargo = ?, " +
-                "questoes_acertadas = (SELECT COUNT(DISTINCT pergunta_id) FROM respostas_usuarios WHERE usuario_id = ? AND acertou = true), "
-                +
+                "questoes_acertadas = (SELECT COUNT(DISTINCT pergunta_id) FROM respostas_usuarios WHERE usuario_id = ? AND acertou = true), " +
                 "total_questoes = (SELECT COUNT(*) FROM perguntas), " +
-                "ofensiva = CASE WHEN ultima_atividade < CURRENT_DATE OR ultima_atividade IS NULL THEN ofensiva + 1 ELSE ofensiva END, "
-                +
+                "ofensiva = CASE WHEN ultima_atividade < CURRENT_DATE OR ultima_atividade IS NULL THEN ofensiva + 1 ELSE ofensiva END, " +
                 "ultima_atividade = CURRENT_DATE " +
                 "WHERE id = ?";
 
         String sqlProgressoModulo = "SELECT p.modulo_id, " +
                 "(SELECT COUNT(*) FROM perguntas WHERE modulo_id = p.modulo_id) AS total_mod, " +
-                "(SELECT COUNT(DISTINCT r.pergunta_id) FROM respostas_usuarios r JOIN perguntas p2 ON r.pergunta_id = p2.id WHERE p2.modulo_id = p.modulo_id AND r.usuario_id = ? AND r.acertou = true) AS acertos_mod "
-                +
+                "(SELECT COUNT(DISTINCT r.pergunta_id) FROM respostas_usuarios r JOIN perguntas p2 ON r.pergunta_id = p2.id WHERE p2.modulo_id = p.modulo_id AND r.usuario_id = ? AND r.acertou = true) AS acertos_mod " +
                 "FROM perguntas p WHERE p.id = ?";
 
         String sqlConcluirModulo = "INSERT INTO modulos_concluidos (usuario_id, modulo_id) " +
@@ -120,36 +129,32 @@ public class UsuarioDAO {
 
         try (Connection conn = ConexaoJDBC.conectar()) {
             int usuarioId = -1;
-            try (PreparedStatement stmtBusca = conn.prepareStatement(sqlUsuarioId)) {
-                stmtBusca.setString(1, email);
+            Boolean acertouAnteriormente = null;
+
+            // 1. Busca o usuario e verifica a resposta anterior de uma so vez
+            try (PreparedStatement stmtBusca = conn.prepareStatement(sqlBuscaUsuarioEResposta)) {
+                stmtBusca.setInt(1, perguntaId);
+                stmtBusca.setString(2, email);
                 try (ResultSet rs = stmtBusca.executeQuery()) {
-                    if (rs.next())
+                    if (rs.next()) {
                         usuarioId = rs.getInt("id");
+                        boolean valorAcertou = rs.getBoolean("acertou");
+                        if (!rs.wasNull()) {
+                            acertouAnteriormente = valorAcertou;
+                        }
+                    }
                 }
             }
 
             if (usuarioId == -1)
                 return "ERRO";
 
-            conn.setAutoCommit(false);
-
-            // 1. Verifica se a pergunta já foi respondida antes
-            Boolean acertouAnteriormente = null;
-            try (PreparedStatement stmtCheck = conn.prepareStatement(sqlCheckResposta)) {
-                stmtCheck.setInt(1, usuarioId);
-                stmtCheck.setInt(2, perguntaId);
-                try (ResultSet rs = stmtCheck.executeQuery()) {
-                    if (rs.next()) {
-                        acertouAnteriormente = rs.getBoolean("acertou");
-                    }
-                }
-            }
-
-            // Se já tinha acertado antes, impede farm de XP
+            // Se já tinha acertado antes, impede farm de XP nem abre transacao de escrita
             if (acertouAnteriormente != null && acertouAnteriormente) {
-                conn.rollback();
                 return "DUPLICADO";
             }
+
+            conn.setAutoCommit(false);
 
             // Se é inédita, insere; se tinha errado antes, atualiza na revisão
             if (acertouAnteriormente == null) {
