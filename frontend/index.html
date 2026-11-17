@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arena Java - Início</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css">
@@ -16,16 +16,20 @@
     <div class="grid-background"></div>
 
     <main class="hero-container">
-        <div class="nes-emblem-wrap">
-            <svg class="nes-swords-logo" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-label="Logo Arena Java">
-                <path d="M6 1h1v2H6v1h1v2H6V5H5V3h1V1zm3 0h1v2H9v1h1v2H9V5H8V3h1V1z" fill="#f89820"/>
-                <path d="M3 7h8v1h2v3h-2v1h-1v1H4v-1H3V7zm8 2v1h1V9h-1z" fill="#00a8ff"/>
-                <rect x="4" y="8" width="6" height="3" fill="#5382a1"/>
-                <rect x="2" y="14" width="10" height="1" fill="#00a8ff"/>
-            </svg>
+        <!-- Logo e Título lado a lado na horizontal, acima da linha do horizonte -->
+        <div class="hero-brand-row">
+            <div class="nes-emblem-wrap">
+                <svg class="nes-swords-logo" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-label="Logo Arena Java">
+                    <path d="M6 1h1v2H6v1h1v2H6V5H5V3h1V1zm3 0h1v2H9v1h1v2H9V5H8V3h1V1z" fill="#f89820"/>
+                    <path d="M3 7h8v1h2v3h-2v1h-1v1H4v-1H3V7zm8 2v1h1V9h-1z" fill="#00a8ff"/>
+                    <rect x="4" y="8" width="6" height="3" fill="#5382a1"/>
+                    <rect x="2" y="14" width="10" height="1" fill="#00a8ff"/>
+                </svg>
+            </div>
+
+            <h1 class="hero-title">&lt;Arena <span class="highlight-cyan">Java</span>/&gt;</h1>
         </div>
 
-        <h1 class="hero-title">&lt;Arena <span class="highlight-cyan">Java</span>/&gt;</h1>
         <p class="hero-subtitle">
             Domine a Programação Orientada a Objetos do básico ao avançado em uma jornada gamificada de 10 estágios. Compile seu conhecimento e suba no Ranking BSI!
         </p>
