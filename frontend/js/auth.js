@@ -22,8 +22,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let modoAtual = "login";
     let loadingInterval = null;
+    let bancoAquecido = false;
 
-    // Garante que a animação de giro funcione mesmo sem depender do style.css
     if (!document.getElementById("arena-spin-style")) {
         const style = document.createElement("style");
         style.id = "arena-spin-style";
@@ -45,14 +45,26 @@ document.addEventListener("DOMContentLoaded", () => {
         document.head.appendChild(style);
     }
 
-    // PRÉ-AQUECIMENTO: Acorda o Render e o banco em segundo plano assim que a página abre
-    function aquecerServidor() {
+    // PRÉ-AQUECIMENTO REAL: Envia um POST silencioso que força o Java a abrir a conexão com o banco Neon antes do usuário clicar em Logar
+    function aquecerServidorEBanco() {
+        if (bancoAquecido) return;
+        bancoAquecido = true;
+
         fetch("https://arena-java-api.onrender.com/api/auth", {
-            method: "OPTIONS",
-            mode: "cors"
-        }).catch(() => {});
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                acao: "login",
+                email: "warmup_ping@arenajava.local",
+                senha: "0"
+            })
+        }).catch(() => {
+            bancoAquecido = false;
+        });
     }
-    aquecerServidor();
+
+    // Dispara assim que o index.html carrega
+    aquecerServidorEBanco();
 
     if (window.ArenaIHC) {
         ArenaIHC.bindCapsLockWarning(inputSenha, capsWarning);
@@ -60,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (btnOpen) {
         btnOpen.addEventListener("click", () => {
-            aquecerServidor(); // Reforça o aquecimento quando o usuário abre o modal
+            aquecerServidorEBanco();
             modal.classList.remove("hidden");
             setTimeout(() => {
                 if (modoAtual === "cadastrar" && inputNome) inputNome.focus();

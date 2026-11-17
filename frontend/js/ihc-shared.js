@@ -12,7 +12,6 @@ window.ArenaIHC = (() => {
         theme: "cyberpunk"
     };
 
-    // Tabela única e padronizada das 6 Patentes (usada em todo o sistema)
     const PATENTES = [
         { match: "derrubador", nome: "Derrubador de Servidor",           minXp: 0,    icone: "ph-fill ph-lightning",       cor: "#ff3366" },
         { match: "criador",    nome: "Criador de bugs",                  minXp: 200,  icone: "ph-fill ph-bug-beetle",      cor: "#00ff73" },
@@ -35,7 +34,6 @@ window.ArenaIHC = (() => {
         return PATENTES.find(c => limpo.includes(c.match)) || PATENTES[0];
     }
 
-    // Cria o elemento DOM padronizado do Cargo (Caixa Neon + Ícone + Nome)
     function criarElementoCargo(nomeCargo, tamanhoCompacto = false) {
         const meta = obterMetaCargo(nomeCargo);
 
@@ -92,7 +90,7 @@ window.ArenaIHC = (() => {
     }
 
     // =========================================================================
-    // MOTOR DE ÁUDIO 8-BIT / 16-BIT GLOBAL (Sincronizado com Navegação)
+    // MOTOR DE ÁUDIO 8-BIT / 16-BIT GLOBAL (Volume Equalizado)
     // =========================================================================
     let audioCtx = null;
     let lastHoverTime = 0;
@@ -114,13 +112,13 @@ window.ArenaIHC = (() => {
         const ctx = getAudioContext();
         if (!ctx) return Promise.resolve();
 
-        // Calcula a duração total do efeito para não cortar o som ao mudar de página
+        // Margem extra de 65ms para garantir que as duas notas toquem com volume total antes de mudar de tela
         const maxEndSec = notes.reduce((max, n) => Math.max(max, (n.delay || 0) + (n.duration || 0.05)), 0.05);
-        const durationMs = Math.ceil(maxEndSec * 1000) + 25;
+        const durationMs = Math.ceil(maxEndSec * 1000) + 65;
 
-        const playAndWait = () => new Promise(resolve => {
+        const playAndWait = (extraLeadSec = 0.008) => new Promise(resolve => {
             try {
-                const now = ctx.currentTime + 0.005;
+                const now = ctx.currentTime + extraLeadSec;
                 notes.forEach(n => {
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
@@ -131,16 +129,16 @@ window.ArenaIHC = (() => {
                         osc.frequency.exponentialRampToValueAtTime(n.slideTo, now + (n.delay || 0) + n.duration);
                     }
 
-                    const vol = n.vol || 0.18;
+                    const vol = n.vol || 0.22;
                     gain.gain.setValueAtTime(0.001, now + (n.delay || 0));
-                    gain.gain.linearRampToValueAtTime(vol, now + (n.delay || 0) + 0.01);
-                    gain.gain.exponentialRampToValueAtTime(0.0008, now + (n.delay || 0) + n.duration);
+                    gain.gain.linearRampToValueAtTime(vol, now + (n.delay || 0) + 0.008);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + (n.delay || 0) + n.duration);
 
                     osc.connect(gain);
                     gain.connect(ctx.destination);
 
                     osc.start(now + (n.delay || 0));
-                    osc.stop(now + (n.delay || 0) + n.duration + 0.015);
+                    osc.stop(now + (n.delay || 0) + n.duration + 0.02);
                 });
             } catch (e) {}
 
@@ -148,14 +146,14 @@ window.ArenaIHC = (() => {
         });
 
         if (ctx.state === "suspended") {
-            const resumePromise = ctx.resume().then(playAndWait).catch(() => {});
-            // Trava de segurança de 240ms para nunca atrasar a navegação caso o navegador bloqueie áudio
+            // Quando o navegador acorda o áudio no primeiro clique, dá 20ms de folga para não abafar a 1ª nota
+            const resumePromise = ctx.resume().then(() => playAndWait(0.02)).catch(() => {});
             activeSoundPromise = Promise.race([
                 resumePromise,
-                new Promise(res => setTimeout(res, 240))
+                new Promise(res => setTimeout(res, 280))
             ]);
         } else {
-            activeSoundPromise = playAndWait();
+            activeSoundPromise = playAndWait(0.008);
         }
 
         return activeSoundPromise;
@@ -164,7 +162,6 @@ window.ArenaIHC = (() => {
     function playSound(effect) {
         if (!getPrefs().soundEnabled) return Promise.resolve();
 
-        // Nunca cria ou força AudioContext durante hover se a página ainda não recebeu clique
         if (effect === "hover" && (!audioCtx || audioCtx.state !== "running")) {
             return Promise.resolve();
         }
@@ -174,8 +171,8 @@ window.ArenaIHC = (() => {
 
         if (!isMajorSound && nowMs < suppressMinorSoundsUntil) return activeSoundPromise;
 
-        // Trava global anti-duplicação: impede 2 sons de clique/abertura em menos de 110ms
-        if (effect !== "type" && effect !== "hover" && !isMajorSound && (nowMs - lastSoundTime) < 110) {
+        // Trava global anti-duplicação (160ms cobre todo o tempo entre pointerdown e click)
+        if (effect !== "type" && effect !== "hover" && !isMajorSound && (nowMs - lastSoundTime) < 160) {
             return activeSoundPromise;
         }
 
@@ -191,23 +188,24 @@ window.ArenaIHC = (() => {
             case "hover":
                 return scheduleNotes([{ freq: 580, slideTo: 660, type: "sine", duration: 0.032, vol: 0.05 }]);
             case "click":
-                return scheduleNotes([{ freq: 660, slideTo: 880, type: "triangle", duration: 0.055, vol: 0.16 }]);
+                return scheduleNotes([{ freq: 660, slideTo: 880, type: "triangle", duration: 0.06, vol: 0.22 }]);
             case "card":
             case "open":
+                // Ambas as notas em 'triangle' com volume igualado para nunca parecer mais baixo
                 return scheduleNotes([
-                    { freq: 523.25, type: "sine", delay: 0.00, duration: 0.055, vol: 0.18 },
-                    { freq: 659.25, type: "triangle", delay: 0.045, duration: 0.085, vol: 0.20 }
+                    { freq: 523.25, type: "triangle", delay: 0.00, duration: 0.06, vol: 0.24 },
+                    { freq: 659.25, type: "triangle", delay: 0.05, duration: 0.09, vol: 0.26 }
                 ]);
             case "close":
                 return scheduleNotes([
-                    { freq: 587.33, type: "triangle", delay: 0.00, duration: 0.05, vol: 0.15 },
-                    { freq: 392.00, type: "triangle", delay: 0.04, duration: 0.08, vol: 0.15 }
+                    { freq: 587.33, type: "triangle", delay: 0.00, duration: 0.055, vol: 0.20 },
+                    { freq: 392.00, type: "triangle", delay: 0.045, duration: 0.085, vol: 0.20 }
                 ]);
             case "logout":
                 return scheduleNotes([
-                    { freq: 659.25, type: "triangle", delay: 0.00, duration: 0.07, vol: 0.22 },
-                    { freq: 493.88, type: "triangle", delay: 0.06, duration: 0.07, vol: 0.22 },
-                    { freq: 329.63, slideTo: 246.94, type: "triangle", delay: 0.12, duration: 0.16, vol: 0.24 }
+                    { freq: 659.25, type: "triangle", delay: 0.00, duration: 0.07, vol: 0.24 },
+                    { freq: 493.88, type: "triangle", delay: 0.06, duration: 0.07, vol: 0.24 },
+                    { freq: 329.63, slideTo: 246.94, type: "triangle", delay: 0.12, duration: 0.16, vol: 0.26 }
                 ]);
             case "type":
                 return scheduleNotes([{ freq: 920, slideTo: 480, type: "sine", duration: 0.022, vol: 0.06 }]);
@@ -301,7 +299,6 @@ window.ArenaIHC = (() => {
         }, { capture: true });
 
         document.addEventListener("mouseover", (e) => {
-            // Só toca som de hover se o áudio já estiver destravado na página atual
             if (!audioCtx || audioCtx.state !== "running") return;
 
             const target = e.target;
@@ -341,7 +338,6 @@ window.ArenaIHC = (() => {
     }
 
     function setupSidebarAndSettingsModal() {
-        // Pré-carrega as abas principais em segundo plano
         ["dashboard.html", "trilha.html", "perfil.html"].forEach(pagina => {
             const linkPrefetch = document.createElement("link");
             linkPrefetch.rel = "prefetch";
@@ -349,7 +345,6 @@ window.ArenaIHC = (() => {
             document.head.appendChild(linkPrefetch);
         });
 
-        // Intercepta todos os botões e ícones que mudam de página para esperar o som terminar antes de sair
         document.querySelectorAll("[onclick*='window.location.href']").forEach(el => {
             const rawOnClick = el.getAttribute("onclick");
             const match = rawOnClick && rawOnClick.match(/'([^']+)'/);
@@ -360,15 +355,13 @@ window.ArenaIHC = (() => {
 
                 el.addEventListener("click", (e) => {
                     e.preventDefault();
-                    // Se clicar no ícone da aba que já está aberta, apenas toca o som sem recarregar à toa
                     if (el.classList.contains("sidebar-icon") && el.classList.contains("active")) {
-                        playSound("card");
                         return;
                     }
 
                     if (isLogout) sessionStorage.clear();
 
-                    // Garante que o som foi disparado (caso o navegador só tenha liberado o AudioContext no click)
+                    // Aguarda a conclusão exata do som iniciado no pointerdown antes de mudar de página
                     const somPromise = playSound(isLogout ? "logout" : "card");
                     somPromise.then(() => {
                         window.location.href = targetUrl;
@@ -493,7 +486,6 @@ window.ArenaIHC = (() => {
         inputEl.addEventListener("blur", () => warningEl.classList.add("hidden"));
     }
 
-    // Injeta a Xícara de Café 8-Bit como Favicon na aba de todas as páginas
     function injectRetroFavicon() {
         const svgFavicon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">
             <path d="M6 1h1v2H6v1h1v2H6V5H5V3h1V1zm3 0h1v2H9v1h1v2H9V5H8V3h1V1z" fill="#f89820"/>
