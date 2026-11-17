@@ -14,12 +14,12 @@ window.ArenaIHC = (() => {
 
     // Tabela única e padronizada das 6 Patentes (usada em todo o sistema)
     const PATENTES = [
-        { match: "derrubador", nome: "Derrubador de Servidor", minXp: 0, icone: "ph-fill ph-lightning", cor: "#ff3366" },
-        { match: "criador", nome: "Criador de bugs", minXp: 200, icone: "ph-fill ph-bug-beetle", cor: "#00ff73" },
-        { match: "caçador", nome: "Caçador de Ponto e Vírgula (;)", minXp: 500, icone: "ph-fill ph-crosshair", cor: "#00f0ff" },
-        { match: "refém", nome: "Refém da Inteligência Artificial", minXp: 1500, icone: "ph-fill ph-robot", cor: "#b84dff" },
-        { match: "mestre", nome: "Mestre do Stack Overflow", minXp: 3000, icone: "ph-fill ph-terminal-window", cor: "#ff9900" },
-        { match: "compilador", nome: "Compilador Humano", minXp: 5000, icone: "ph-fill ph-cpu", cor: "#ffd700" }
+        { match: "derrubador", nome: "Derrubador de Servidor",           minXp: 0,    icone: "ph-fill ph-lightning",       cor: "#ff3366" },
+        { match: "criador",    nome: "Criador de bugs",                  minXp: 200,  icone: "ph-fill ph-bug-beetle",      cor: "#00ff73" },
+        { match: "caçador",    nome: "Caçador de Ponto e Vírgula (;)",   minXp: 500,  icone: "ph-fill ph-crosshair",       cor: "#00f0ff" },
+        { match: "refém",      nome: "Refém da Inteligência Artificial", minXp: 1500, icone: "ph-fill ph-robot",           cor: "#b84dff" },
+        { match: "mestre",     nome: "Mestre do Stack Overflow",         minXp: 3000, icone: "ph-fill ph-terminal-window", cor: "#ff9900" },
+        { match: "compilador", nome: "Compilador Humano",                minXp: 5000, icone: "ph-fill ph-cpu",             cor: "#ffd700" }
     ];
 
     function limparEmojis(texto) {
@@ -92,13 +92,14 @@ window.ArenaIHC = (() => {
     }
 
     // =========================================================================
-    // MOTOR DE ÁUDIO 8-BIT / 16-BIT GLOBAL (Sem duplicação)
+    // MOTOR DE ÁUDIO 8-BIT / 16-BIT GLOBAL (Sincronizado com Navegação)
     // =========================================================================
     let audioCtx = null;
     let lastHoverTime = 0;
     let lastHoveredElement = null;
     let lastSoundTime = 0;
     let suppressMinorSoundsUntil = 0;
+    let activeSoundPromise = Promise.resolve();
 
     function getAudioContext() {
         if (!audioCtx) {
@@ -109,52 +110,73 @@ window.ArenaIHC = (() => {
     }
 
     function scheduleNotes(notes) {
-        if (!getPrefs().soundEnabled) return;
+        if (!getPrefs().soundEnabled) return Promise.resolve();
         const ctx = getAudioContext();
-        if (!ctx) return;
+        if (!ctx) return Promise.resolve();
 
-        const triggerOscillators = () => {
-            const now = ctx.currentTime + 0.005;
-            notes.forEach(n => {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
+        // Calcula a duração total do efeito para não cortar o som ao mudar de página
+        const maxEndSec = notes.reduce((max, n) => Math.max(max, (n.delay || 0) + (n.duration || 0.05)), 0.05);
+        const durationMs = Math.ceil(maxEndSec * 1000) + 25;
 
-                osc.type = n.type || "triangle";
-                osc.frequency.setValueAtTime(n.freq, now + (n.delay || 0));
-                if (n.slideTo) {
-                    osc.frequency.exponentialRampToValueAtTime(n.slideTo, now + (n.delay || 0) + n.duration);
-                }
+        const playAndWait = () => new Promise(resolve => {
+            try {
+                const now = ctx.currentTime + 0.005;
+                notes.forEach(n => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
 
-                const vol = n.vol || 0.18;
-                gain.gain.setValueAtTime(0.001, now + (n.delay || 0));
-                gain.gain.linearRampToValueAtTime(vol, now + (n.delay || 0) + 0.01);
-                gain.gain.exponentialRampToValueAtTime(0.0008, now + (n.delay || 0) + n.duration);
+                    osc.type = n.type || "triangle";
+                    osc.frequency.setValueAtTime(n.freq, now + (n.delay || 0));
+                    if (n.slideTo) {
+                        osc.frequency.exponentialRampToValueAtTime(n.slideTo, now + (n.delay || 0) + n.duration);
+                    }
 
-                osc.connect(gain);
-                gain.connect(ctx.destination);
+                    const vol = n.vol || 0.18;
+                    gain.gain.setValueAtTime(0.001, now + (n.delay || 0));
+                    gain.gain.linearRampToValueAtTime(vol, now + (n.delay || 0) + 0.01);
+                    gain.gain.exponentialRampToValueAtTime(0.0008, now + (n.delay || 0) + n.duration);
 
-                osc.start(now + (n.delay || 0));
-                osc.stop(now + (n.delay || 0) + n.duration + 0.015);
-            });
-        };
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    osc.start(now + (n.delay || 0));
+                    osc.stop(now + (n.delay || 0) + n.duration + 0.015);
+                });
+            } catch (e) {}
+
+            setTimeout(resolve, durationMs);
+        });
 
         if (ctx.state === "suspended") {
-            ctx.resume().catch(() => {});
+            const resumePromise = ctx.resume().then(playAndWait).catch(() => {});
+            // Trava de segurança de 240ms para nunca atrasar a navegação caso o navegador bloqueie áudio
+            activeSoundPromise = Promise.race([
+                resumePromise,
+                new Promise(res => setTimeout(res, 240))
+            ]);
+        } else {
+            activeSoundPromise = playAndWait();
         }
-        triggerOscillators();
+
+        return activeSoundPromise;
     }
 
     function playSound(effect) {
-        if (!getPrefs().soundEnabled) return;
+        if (!getPrefs().soundEnabled) return Promise.resolve();
+
+        // Nunca cria ou força AudioContext durante hover se a página ainda não recebeu clique
+        if (effect === "hover" && (!audioCtx || audioCtx.state !== "running")) {
+            return Promise.resolve();
+        }
 
         const nowMs = performance.now();
         const isMajorSound = (effect === "success" || effect === "error" || effect === "levelup" || effect === "logout");
 
-        if (!isMajorSound && nowMs < suppressMinorSoundsUntil) return;
+        if (!isMajorSound && nowMs < suppressMinorSoundsUntil) return activeSoundPromise;
 
         // Trava global anti-duplicação: impede 2 sons de clique/abertura em menos de 110ms
         if (effect !== "type" && effect !== "hover" && !isMajorSound && (nowMs - lastSoundTime) < 110) {
-            return;
+            return activeSoundPromise;
         }
 
         if (effect !== "hover" && effect !== "type") {
@@ -167,56 +189,49 @@ window.ArenaIHC = (() => {
 
         switch (effect) {
             case "hover":
-                scheduleNotes([{ freq: 580, slideTo: 660, type: "sine", duration: 0.032, vol: 0.05 }]);
-                break;
+                return scheduleNotes([{ freq: 580, slideTo: 660, type: "sine", duration: 0.032, vol: 0.05 }]);
             case "click":
-                scheduleNotes([{ freq: 660, slideTo: 880, type: "triangle", duration: 0.055, vol: 0.16 }]);
-                break;
+                return scheduleNotes([{ freq: 660, slideTo: 880, type: "triangle", duration: 0.055, vol: 0.16 }]);
             case "card":
             case "open":
-                scheduleNotes([
+                return scheduleNotes([
                     { freq: 523.25, type: "sine", delay: 0.00, duration: 0.055, vol: 0.18 },
                     { freq: 659.25, type: "triangle", delay: 0.045, duration: 0.085, vol: 0.20 }
                 ]);
-                break;
             case "close":
-                scheduleNotes([
+                return scheduleNotes([
                     { freq: 587.33, type: "triangle", delay: 0.00, duration: 0.05, vol: 0.15 },
                     { freq: 392.00, type: "triangle", delay: 0.04, duration: 0.08, vol: 0.15 }
                 ]);
-                break;
             case "logout":
-                scheduleNotes([
+                return scheduleNotes([
                     { freq: 659.25, type: "triangle", delay: 0.00, duration: 0.07, vol: 0.22 },
                     { freq: 493.88, type: "triangle", delay: 0.06, duration: 0.07, vol: 0.22 },
                     { freq: 329.63, slideTo: 246.94, type: "triangle", delay: 0.12, duration: 0.16, vol: 0.24 }
                 ]);
-                break;
             case "type":
-                scheduleNotes([{ freq: 920, slideTo: 480, type: "sine", duration: 0.022, vol: 0.06 }]);
-                break;
+                return scheduleNotes([{ freq: 920, slideTo: 480, type: "sine", duration: 0.022, vol: 0.06 }]);
             case "success":
-                scheduleNotes([
+                return scheduleNotes([
                     { freq: 523.25, type: "triangle", delay: 0.00, duration: 0.08, vol: 0.26 },
                     { freq: 659.25, type: "triangle", delay: 0.07, duration: 0.08, vol: 0.26 },
                     { freq: 783.99, type: "triangle", delay: 0.14, duration: 0.09, vol: 0.26 },
                     { freq: 1046.50, type: "triangle", delay: 0.21, duration: 0.22, vol: 0.30 }
                 ]);
-                break;
             case "error":
-                scheduleNotes([
+                return scheduleNotes([
                     { freq: 311.13, slideTo: 277.18, type: "sawtooth", delay: 0.00, duration: 0.13, vol: 0.24 },
                     { freq: 233.08, slideTo: 174.61, type: "sawtooth", delay: 0.14, duration: 0.26, vol: 0.26 }
                 ]);
-                break;
             case "levelup":
-                scheduleNotes([
+                return scheduleNotes([
                     { freq: 440.00, type: "square", delay: 0.00, duration: 0.08, vol: 0.18 },
                     { freq: 554.37, type: "square", delay: 0.08, duration: 0.08, vol: 0.18 },
                     { freq: 659.25, type: "square", delay: 0.16, duration: 0.08, vol: 0.18 },
                     { freq: 880.00, type: "square", delay: 0.24, duration: 0.26, vol: 0.22 }
                 ]);
-                break;
+            default:
+                return Promise.resolve();
         }
     }
 
@@ -251,7 +266,9 @@ window.ArenaIHC = (() => {
     function setupGlobalSoundListeners() {
         document.addEventListener("pointerdown", (e) => {
             const ctx = getAudioContext();
-            if (ctx && ctx.state === "suspended") ctx.resume();
+            if (ctx && ctx.state === "suspended") {
+                ctx.resume().catch(() => {});
+            }
 
             const target = e.target;
             if (!target || !target.closest) return;
@@ -284,6 +301,9 @@ window.ArenaIHC = (() => {
         }, { capture: true });
 
         document.addEventListener("mouseover", (e) => {
+            // Só toca som de hover se o áudio já estiver destravado na página atual
+            if (!audioCtx || audioCtx.state !== "running") return;
+
             const target = e.target;
             if (!target || !target.closest) return;
 
@@ -300,7 +320,9 @@ window.ArenaIHC = (() => {
 
         document.addEventListener("keydown", (e) => {
             const ctx = getAudioContext();
-            if (ctx && ctx.state === "suspended") ctx.resume();
+            if (ctx && ctx.state === "suspended") {
+                ctx.resume().catch(() => {});
+            }
 
             if (e.key === "Escape") {
                 playSound("logout");
@@ -319,6 +341,7 @@ window.ArenaIHC = (() => {
     }
 
     function setupSidebarAndSettingsModal() {
+        // Pré-carrega as abas principais em segundo plano
         ["dashboard.html", "trilha.html", "perfil.html"].forEach(pagina => {
             const linkPrefetch = document.createElement("link");
             linkPrefetch.rel = "prefetch";
@@ -326,28 +349,36 @@ window.ArenaIHC = (() => {
             document.head.appendChild(linkPrefetch);
         });
 
+        // Intercepta todos os botões e ícones que mudam de página para esperar o som terminar antes de sair
+        document.querySelectorAll("[onclick*='window.location.href']").forEach(el => {
+            const rawOnClick = el.getAttribute("onclick");
+            const match = rawOnClick && rawOnClick.match(/'([^']+)'/);
+            if (match && match[1]) {
+                const targetUrl = match[1];
+                const isLogout = el.classList.contains("logout-icon");
+                el.removeAttribute("onclick");
+
+                el.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    // Se clicar no ícone da aba que já está aberta, apenas toca o som sem recarregar à toa
+                    if (el.classList.contains("sidebar-icon") && el.classList.contains("active")) {
+                        playSound("card");
+                        return;
+                    }
+
+                    if (isLogout) sessionStorage.clear();
+
+                    // Garante que o som foi disparado (caso o navegador só tenha liberado o AudioContext no click)
+                    const somPromise = playSound(isLogout ? "logout" : "card");
+                    somPromise.then(() => {
+                        window.location.href = targetUrl;
+                    });
+                });
+            }
+        });
+
         const sidebar = document.querySelector(".sidebar");
         if (sidebar) {
-            const icons = sidebar.querySelectorAll(".sidebar-icon");
-            icons.forEach(icon => {
-                const rawOnClick = icon.getAttribute("onclick");
-                if (rawOnClick && rawOnClick.includes("window.location.href")) {
-                    const match = rawOnClick.match(/'([^']+)'/);
-                    if (match && match[1]) {
-                        const targetUrl = match[1];
-                        const isLogout = icon.classList.contains("logout-icon");
-                        icon.removeAttribute("onclick");
-                        icon.addEventListener("click", () => {
-                            if (isLogout) sessionStorage.clear();
-                            // 70ms (0,07s): imperceptível no visual, mas suficiente para o som tocar
-                            setTimeout(() => {
-                                window.location.href = targetUrl;
-                            }, isLogout ? 180 : 70);
-                        });
-                    }
-                }
-            });
-
             const gearBtn = sidebar.querySelector(".sidebar-help-trigger");
             if (gearBtn) {
                 gearBtn.addEventListener("click", openHelpModal);
@@ -441,7 +472,6 @@ window.ArenaIHC = (() => {
         if (btnClassic) btnClassic.classList.toggle("selected", prefs.theme === "classic-ide");
     }
 
-    // Sem playSound("open") aqui dentro para não duplicar com o clique do ícone!
     function openHelpModal() {
         syncModalControls();
         const modal = document.getElementById("ihc-help-modal");
@@ -461,6 +491,23 @@ window.ArenaIHC = (() => {
         inputEl.addEventListener("keyup", checkCaps);
         inputEl.addEventListener("keydown", checkCaps);
         inputEl.addEventListener("blur", () => warningEl.classList.add("hidden"));
+    }
+
+    // Injeta a Xícara de Café 8-Bit como Favicon na aba de todas as páginas
+    function injectRetroFavicon() {
+        const svgFavicon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">
+            <path d="M6 1h1v2H6v1h1v2H6V5H5V3h1V1zm3 0h1v2H9v1h1v2H9V5H8V3h1V1z" fill="#f89820"/>
+            <path d="M3 7h8v1h2v3h-2v1h-1v1H4v-1H3V7zm8 2v1h1V9h-1z" fill="#00a8ff"/>
+            <rect x="4" y="8" width="6" height="3" fill="#5382a1"/>
+            <rect x="2" y="14" width="10" height="1" fill="#00a8ff"/>
+        </svg>`;
+
+        document.querySelectorAll("link[rel*='icon']").forEach(el => el.remove());
+        const link = document.createElement("link");
+        link.rel = "icon";
+        link.type = "image/svg+xml";
+        link.href = `data:image/svg+xml,${encodeURIComponent(svgFavicon)}`;
+        document.head.appendChild(link);
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -484,21 +531,4 @@ window.ArenaIHC = (() => {
         criarElementoCargo,
         renderizarCargo
     };
-
-    // Injeta a Xícara de Café 8-Bit como Favicon na aba de todas as páginas
-    function injectRetroFavicon() {
-        const svgFavicon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">
-            <path d="M6 1h1v2H6v1h1v2H6V5H5V3h1V1zm3 0h1v2H9v1h1v2H9V5H8V3h1V1z" fill="#f89820"/>
-            <path d="M3 7h8v1h2v3h-2v1h-1v1H4v-1H3V7zm8 2v1h1V9h-1z" fill="#00a8ff"/>
-            <rect x="4" y="8" width="6" height="3" fill="#5382a1"/>
-            <rect x="2" y="14" width="10" height="1" fill="#00a8ff"/>
-        </svg>`;
-
-        document.querySelectorAll("link[rel*='icon']").forEach(el => el.remove());
-        const link = document.createElement("link");
-        link.rel = "icon";
-        link.type = "image/svg+xml";
-        link.href = `data:image/svg+xml,${encodeURIComponent(svgFavicon)}`;
-        document.head.appendChild(link);
-    }
 })();
