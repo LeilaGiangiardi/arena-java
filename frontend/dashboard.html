@@ -5,8 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arena Java - Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/duotone/style.css">
     <link rel="stylesheet" href="css/style.css">
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="prefetch" href="trilha.html">
+    <link rel="prefetch" href="perfil.html">
 </head>
 <body class="dashboard-body">
 
@@ -35,7 +40,7 @@
 
     <main class="main-content">
         <header class="top-header">
-            <h1 class="greeting"><span id="saudacao">Boa noite</span>, <span id="user-nome" class="highlight-cyan">Carregando...</span>!</h1>
+            <h1 class="greeting"><span id="saudacao">Boa noite</span>, <span id="user-nome" class="highlight-cyan">Jogador</span>!</h1>
             <div class="user-stats">
                 <span>Sua pontuação: <i class="ph-fill ph-medal icon-gold"></i> <strong id="user-xp">0</strong></span>
                 <span class="header-rank-wrap">Seu Ranking: <strong id="user-cargo" class="ranking-title"></strong></span>
@@ -44,7 +49,6 @@
 
         <div class="dashboard-grid">
             <div class="dashboard-left">
-                <!-- 1. Cartão Superior: Apenas Indicadores de Desempenho (Sem botão repetido) -->
                 <section class="dashboard-card summary-overview">
                     <div class="card-header-flex">
                         <h2><i class="ph-fill ph-chart-line-up text-cyan"></i> Seu Desempenho na Arena</h2>
@@ -74,7 +78,6 @@
                     </div>
                 </section>
 
-                <!-- 2. Banner Único de Ação ("Jogar Agora" para contas novas / "Continuar" para contas em andamento) -->
                 <section class="dashboard-card next-mission-banner">
                     <div class="next-mission-left">
                         <div class="next-mission-icon">
@@ -82,7 +85,7 @@
                         </div>
                         <div class="next-mission-texts">
                             <span id="quick-stage-badge" class="label-small text-cyan">MISSÃO ATUAL • ESTÁGIO 01</span>
-                            <h3 id="quick-module-title">Carregando módulo...</h3>
+                            <h3 id="quick-module-title">Estágio 01</h3>
                         </div>
                     </div>
 
@@ -103,7 +106,6 @@
                 </section>
             </div>
 
-            <!-- Coluna Direita: Ranking Global -->
             <section class="dashboard-card ranking-panel">
                 <div>
                     <h2><i class="ph-fill ph-trophy icon-gold"></i> Ranking Global BSI</h2>
@@ -145,7 +147,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE AJUSTES E GUIA RÁPIDO (Estruturado em Abas por IHC) -->
+    <!-- MODAL DE AJUSTES E GUIA RÁPIDO -->
     <div id="ihc-help-modal" class="modal-overlay hidden">
         <div class="modal-content ihc-settings-modal">
             <button type="button" id="btn-close-ihc-help" class="btn-close" title="Fechar (Esc)">
@@ -165,7 +167,6 @@
                 </button>
             </div>
 
-            <!-- ABA 1: AJUSTES DE INTERFACE -->
             <div id="ihc-pane-settings" class="ihc-tab-pane">
                 <div class="ihc-settings-list">
                     <label class="ihc-switch-row" for="pref-sound">
@@ -213,7 +214,6 @@
                 </div>
             </div>
 
-            <!-- ABA 2: ATALHOS E REGRAS -->
             <div id="ihc-pane-guide" class="ihc-tab-pane hidden">
                 <div class="ihc-guide-block">
                     <span class="label-small">ATALHOS DE TECLADO</span>

@@ -139,10 +139,9 @@ window.ArenaIHC = (() => {
         };
 
         if (ctx.state === "suspended") {
-            ctx.resume().then(triggerOscillators).catch(() => { });
-        } else {
-            triggerOscillators();
+            ctx.resume().catch(() => {});
         }
+        triggerOscillators();
     }
 
     function playSound(effect) {
@@ -320,6 +319,13 @@ window.ArenaIHC = (() => {
     }
 
     function setupSidebarAndSettingsModal() {
+        ["dashboard.html", "trilha.html", "perfil.html"].forEach(pagina => {
+            const linkPrefetch = document.createElement("link");
+            linkPrefetch.rel = "prefetch";
+            linkPrefetch.href = pagina;
+            document.head.appendChild(linkPrefetch);
+        });
+
         const sidebar = document.querySelector(".sidebar");
         if (sidebar) {
             const icons = sidebar.querySelectorAll(".sidebar-icon");
@@ -332,13 +338,11 @@ window.ArenaIHC = (() => {
                         const isLogout = icon.classList.contains("logout-icon");
                         icon.removeAttribute("onclick");
                         icon.addEventListener("click", () => {
-                            if (isLogout) {
-                                sessionStorage.clear();
-                                setTimeout(() => { window.location.href = targetUrl; }, 180);
-                            } else {
-                                // Troca de aba imediata sem atraso
+                            if (isLogout) sessionStorage.clear();
+                            // 70ms (0,07s): imperceptível no visual, mas suficiente para o som tocar
+                            setTimeout(() => {
                                 window.location.href = targetUrl;
-                            }
+                            }, isLogout ? 180 : 70);
                         });
                     }
                 }
