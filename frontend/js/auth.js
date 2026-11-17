@@ -21,6 +21,38 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnOkCredits = document.getElementById("btn-ok-credits");
 
     let modoAtual = "login";
+    let loadingInterval = null;
+
+    // Garante que a animação de giro funcione mesmo sem depender do style.css
+    if (!document.getElementById("arena-spin-style")) {
+        const style = document.createElement("style");
+        style.id = "arena-spin-style";
+        style.textContent = `
+            @keyframes arenaSpin { to { transform: rotate(360deg); } }
+            .arena-spinner-icon {
+                display: inline-block;
+                animation: arenaSpin 0.75s linear infinite;
+                margin-right: 8px;
+                vertical-align: -2px;
+                font-size: 1.1em;
+            }
+            .arena-dots {
+                display: inline-block;
+                width: 1.6ch;
+                text-align: left;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // PRÉ-AQUECIMENTO: Acorda o Render e o banco em segundo plano assim que a página abre
+    function aquecerServidor() {
+        fetch("https://arena-java-api.onrender.com/api/auth", {
+            method: "OPTIONS",
+            mode: "cors"
+        }).catch(() => {});
+    }
+    aquecerServidor();
 
     if (window.ArenaIHC) {
         ArenaIHC.bindCapsLockWarning(inputSenha, capsWarning);
@@ -28,6 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (btnOpen) {
         btnOpen.addEventListener("click", () => {
+            aquecerServidor(); // Reforça o aquecimento quando o usuário abre o modal
             modal.classList.remove("hidden");
             setTimeout(() => {
                 if (modoAtual === "cadastrar" && inputNome) inputNome.focus();
@@ -88,6 +121,29 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    function iniciarAnimacaoBotao() {
+        let passo = 1;
+        btnSubmit.disabled = true;
+
+        const renderizarFrame = () => {
+            const pontos = ".".repeat(passo);
+            btnSubmit.innerHTML = `<i class="ph-bold ph-circle-notch arena-spinner-icon"></i>Conectando ao Servidor<span class="arena-dots">${pontos}</span>`;
+            passo = (passo % 3) + 1;
+        };
+
+        renderizarFrame();
+        loadingInterval = setInterval(renderizarFrame, 380);
+    }
+
+    function pararAnimacaoBotao() {
+        if (loadingInterval) {
+            clearInterval(loadingInterval);
+            loadingInterval = null;
+        }
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = modoAtual === "login" ? "Executar Login" : "Cadastrar Calouro";
+    }
+
     if (authForm) {
         authForm.addEventListener("submit", (e) => {
             e.preventDefault();
@@ -100,8 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 nome: inputNome ? inputNome.value.trim() : ""
             };
 
-            btnSubmit.disabled = true;
-            btnSubmit.textContent = "Conectando ao Servidor...";
+            iniciarAnimacaoBotao();
 
             fetch("https://arena-java-api.onrender.com/api/auth", {
                 method: "POST",
@@ -110,10 +165,10 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .then(res => res.json())
             .then(data => {
-                btnSubmit.disabled = false;
-                btnSubmit.textContent = modoAtual === "login" ? "Executar Login" : "Cadastrar Calouro";
-
                 if (data.sucesso) {
+                    if (loadingInterval) clearInterval(loadingInterval);
+                    btnSubmit.innerHTML = `<i class="ph-bold ph-check-circle" style="margin-right: 6px;"></i>Acesso Liberado!`;
+
                     sessionStorage.clear();
                     sessionStorage.setItem("emailUsuario", data.email);
                     sessionStorage.setItem("nomeUsuario", data.nome);
@@ -123,13 +178,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     sessionStorage.setItem("avatarUsuario", data.avatar || data.nome);
                     window.location.href = "dashboard.html";
                 } else {
+                    pararAnimacaoBotao();
                     feedbackMsg.textContent = data.mensagem || "Erro na autenticação.";
                     feedbackMsg.classList.remove("hidden");
                 }
             })
             .catch(() => {
-                btnSubmit.disabled = false;
-                btnSubmit.textContent = modoAtual === "login" ? "Executar Login" : "Cadastrar Calouro";
+                pararAnimacaoBotao();
                 feedbackMsg.textContent = "Falha de conexão com o servidor Tomcat.";
                 feedbackMsg.classList.remove("hidden");
             });
