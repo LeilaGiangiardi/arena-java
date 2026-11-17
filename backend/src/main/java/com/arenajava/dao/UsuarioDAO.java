@@ -99,6 +99,20 @@ public class UsuarioDAO {
         return lista;
     }
 
+    public boolean emailJaExiste(String email) {
+        String sql = "SELECT 1 FROM usuarios WHERE email = ? LIMIT 1";
+        try (Connection conexao = ConexaoJDBC.conectar();
+             PreparedStatement stmt = conexao.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public String registrarRespostaQuestao(String email, int perguntaId, int xpVariacao, String novoCargo,
             boolean acertou) {
         

@@ -68,7 +68,7 @@ public class AuthServlet extends HttpServlet {
                     jsonResp.addProperty("sucesso", false);
                     jsonResp.addProperty("mensagem", "E-mail e senha são obrigatórios.");
                 } 
-                else if (dao.buscarPorEmail(email) != null) {
+                else if (dao.emailJaExiste(email.trim())) {
                     jsonResp.addProperty("sucesso", false);
                     jsonResp.addProperty("mensagem", "Este e-mail já está em uso.");
                 } 
