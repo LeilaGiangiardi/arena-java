@@ -34,11 +34,11 @@ public class UsuarioDAO {
     }
 
     public Usuario buscarPorEmail(String email) {
-        // Calcula em tempo real os acertos reais e o total de perguntas da Arena (100)
+        // Ignora diferenças de maiúsculas/minúsculas ou espaços no e-mail
         String sql = "SELECT u.*, " +
                 "(SELECT COUNT(*) FROM perguntas) AS total_perguntas_arena, " +
                 "(SELECT COUNT(DISTINCT r.pergunta_id) FROM respostas_usuarios r WHERE r.usuario_id = u.id AND r.acertou = true) AS acertos_reais " +
-                "FROM usuarios u WHERE u.email = ?";
+                "FROM usuarios u WHERE LOWER(TRIM(u.email)) = LOWER(TRIM(?))";
         Usuario usuario = null;
 
         try (Connection conexao = ConexaoJDBC.conectar();
