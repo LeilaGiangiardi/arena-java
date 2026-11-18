@@ -34,9 +34,9 @@ public class DashboardServlet extends HttpServlet {
         }
 
         Usuario usuarioLogado = usuarioDAO.buscarPorEmail(email);
-        List<Usuario> ranking = usuarioDAO.listarTop5Ranking();
 
         if (usuarioLogado != null) {
+            List<Usuario> ranking = usuarioDAO.listarTop5Ranking();
             String avatarLogado = (usuarioLogado.getAvatar() != null && !usuarioLogado.getAvatar().isEmpty())
                     ? usuarioLogado.getAvatar()
                     : usuarioLogado.getNome();

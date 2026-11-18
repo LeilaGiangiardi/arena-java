@@ -1,48 +1,54 @@
 package com.arenajava.util;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
+import java.io.InputStream;
+import java.lang.reflect.Proxy;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 public class ConexaoJDBC {
 
-    private static final HikariDataSource dataSource;
+    private static String url;
+    private static String usuario;
+    private static String senha;
+    private static Connection conexaoCompartilhada;
 
     static {
-        try {
-            Class.forName("org.postgresql.Driver");
-            String url = System.getenv("DB_URL") != null 
-                    ? System.getenv("DB_URL") 
-                    : "jdbc:postgresql://localhost:5432/arena_java";
-            String user = System.getenv("DB_USER") != null 
-                    ? System.getenv("DB_USER") 
-                    : "postgres";
-            String pass = System.getenv("DB_PASS") != null 
-                    ? System.getenv("DB_PASS") 
-                    : "sua_senha_local";
-
-            HikariConfig config = new HikariConfig();
-            config.setJdbcUrl(url);
-            config.setUsername(user);
-            config.setPassword(pass);
-            config.setDriverClassName("org.postgresql.Driver");
-
-            // Configuracoes otimizadas para o Neon (Serverless Postgres)
-            config.setMaximumPoolSize(5);
-            config.setMinimumIdle(1);
-            config.setIdleTimeout(120000);       // 2 minutos
-            config.setMaxLifetime(240000);       // 4 minutos (evita queda por inatividade do Neon)
-            config.setConnectionTimeout(20000);  // 20 segundos
-            config.addDataSourceProperty("prepareThreshold", "0");
-
-            dataSource = new HikariDataSource(config);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Driver do PostgreSQL não encontrado.", e);
+        try (InputStream input = ConexaoJDBC.class.getClassLoader().getResourceAsStream("db.properties")) {
+            if (input != null) {
+                Properties props = new Properties();
+                props.load(input);
+                url = props.getProperty("db.url");
+                usuario = props.getProperty("db.user");
+                senha = props.getProperty("db.password");
+                Class.forName("org.postgresql.Driver");
+            } else {
+                System.err.println("Arquivo db.properties não encontrado em src/main/resources!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    public static Connection conectar() throws SQLException {
-        return dataSource.getConnection();
+    public static synchronized Connection conectar() throws SQLException {
+        if (conexaoCompartilhada == null || conexaoCompartilhada.isClosed() || !conexaoCompartilhada.isValid(2)) {
+            conexaoCompartilhada = DriverManager.getConnection(url, usuario, senha);
+        }
+
+        // Retorna um proxy que mantém a conexão física aberta no Render mesmo após o try-with-resources fechar
+        return (Connection) Proxy.newProxyInstance(
+                ConexaoJDBC.class.getClassLoader(),
+                new Class<?>[]{Connection.class},
+                (proxy, method, args) -> {
+                    if ("close".equals(method.getName())) {
+                        if (!conexaoCompartilhada.getAutoCommit()) {
+                            conexaoCompartilhada.setAutoCommit(true);
+                        }
+                        return null;
+                    }
+                    return method.invoke(conexaoCompartilhada, args);
+                }
+        );
     }
 }
