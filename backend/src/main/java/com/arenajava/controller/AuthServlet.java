@@ -39,7 +39,7 @@ public class AuthServlet extends HttpServlet {
             JsonObject jsonReq = gson.fromJson(reader, JsonObject.class);
             
             String acao = jsonReq.get("acao").getAsString();
-            String email = jsonReq.get("email").getAsString();
+            String email = jsonReq.get("email").getAsString().trim();
             String senha = jsonReq.get("senha").getAsString();
             
             if ("login".equals(acao)) {
@@ -60,15 +60,15 @@ public class AuthServlet extends HttpServlet {
                     jsonResp.addProperty("avatar", avatar);
                 } else {
                     jsonResp.addProperty("sucesso", false);
-                    jsonResp.addProperty("mensagem", "Credenciais inválidas.");
+                    jsonResp.addProperty("mensagem", "E-mail ou senha incorretos.");
                 }
             } 
             else if ("cadastrar".equals(acao)) {
-                if (email == null || email.trim().isEmpty() || senha == null || senha.trim().isEmpty()) {
+                if (email.isEmpty() || senha == null || senha.trim().isEmpty()) {
                     jsonResp.addProperty("sucesso", false);
                     jsonResp.addProperty("mensagem", "E-mail e senha são obrigatórios.");
                 } 
-                else if (dao.emailJaExiste(email.trim())) {
+                else if (dao.buscarPorEmail(email) != null) {
                     jsonResp.addProperty("sucesso", false);
                     jsonResp.addProperty("mensagem", "Este e-mail já está em uso.");
                 } 
@@ -80,14 +80,14 @@ public class AuthServlet extends HttpServlet {
                     
                     Usuario novoUsuario = new Usuario();
                     novoUsuario.setNome(nome);
-                    novoUsuario.setEmail(email.trim());
+                    novoUsuario.setEmail(email);
                     novoUsuario.setSenhaHash(senha);
                     novoUsuario.setAvatar(nome);
                     
                     if (dao.cadastrar(novoUsuario)) {
                         jsonResp.addProperty("sucesso", true);
                         jsonResp.addProperty("mensagem", "Conta criada com sucesso!");
-                        jsonResp.addProperty("email", email.trim());
+                        jsonResp.addProperty("email", email);
                         jsonResp.addProperty("nome", nome);
                         jsonResp.addProperty("cargo", "Derrubador de Servidor 💥");
                         jsonResp.addProperty("xp", 0);
@@ -95,14 +95,14 @@ public class AuthServlet extends HttpServlet {
                         jsonResp.addProperty("avatar", nome);
                     } else {
                         jsonResp.addProperty("sucesso", false);
-                        jsonResp.addProperty("mensagem", "Erro interno ao salvar no banco.");
+                        jsonResp.addProperty("mensagem", "Não foi possível concluir o cadastro agora. Tente novamente.");
                     }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
             jsonResp.addProperty("sucesso", false);
-            jsonResp.addProperty("mensagem", "Erro interno de Servidor. Consulte o log.");
+            jsonResp.addProperty("mensagem", "Servidor reconectando ao banco de dados. Clique novamente em alguns segundos.");
         }
 
         resp.getWriter().write(jsonResp.toString());

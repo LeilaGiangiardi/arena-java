@@ -1,41 +1,57 @@
 package com.arenajava.util;
 
-import java.io.IOException;
-import java.io.InputStream;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Properties;
 
 public class ConexaoJDBC {
 
-    private static final Properties props = new Properties();
+    private static HikariDataSource dataSource;
 
-    static {
-        try (InputStream input = ConexaoJDBC.class.getClassLoader().getResourceAsStream("db.properties")) {
-            if (input == null) {
-                System.err.println("Arquivo db.properties não encontrado em src/main/resources!");
-            } else {
-                props.load(input);
+    private static synchronized HikariDataSource getDataSource() {
+        if (dataSource == null || dataSource.isClosed()) {
+            try {
                 Class.forName("org.postgresql.Driver");
+
+                String url = (System.getenv("DB_URL") != null && !System.getenv("DB_URL").trim().isEmpty())
+                        ? System.getenv("DB_URL").trim()
+                        : "jdbc:postgresql://ep-round-cell-b6owee1n-pooler.c-2.sa-east-1.aws.neon.tech:5432/neondb?sslmode=require";
+
+                String user = (System.getenv("DB_USER") != null && !System.getenv("DB_USER").trim().isEmpty())
+                        ? System.getenv("DB_USER").trim()
+                        : "neondb_owner";
+
+                String pass = (System.getenv("DB_PASS") != null && !System.getenv("DB_PASS").trim().isEmpty())
+                        ? System.getenv("DB_PASS").trim()
+                        : "npg_tUA7SOHLd9jy";
+
+                HikariConfig config = new HikariConfig();
+                config.setJdbcUrl(url);
+                config.setUsername(user);
+                config.setPassword(pass);
+                config.setDriverClassName("org.postgresql.Driver");
+
+                // Configurações otimizadas para o Neon (Serverless Postgres)
+                config.setMaximumPoolSize(5);
+                config.setMinimumIdle(1);
+                config.setIdleTimeout(120000);            // 2 minutos
+                config.setMaxLifetime(240000);            // 4 minutos
+                config.setKeepaliveTime(60000);           // Mantém a conexão viva a cada 1 min
+                config.setConnectionTimeout(30000);       // 30 segundos (tempo para o Neon acordar se estiver hibernando)
+                config.setValidationTimeout(5000);        // 5 segundos para validar se a conexão está ativa
+                config.setInitializationFailTimeout(-1);  // Impede travamento do pool se o banco estiver dormindo na partida
+                config.addDataSourceProperty("prepareThreshold", "0");
+
+                dataSource = new HikariDataSource(config);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException("Driver do PostgreSQL não encontrado.", e);
             }
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Erro ao carregar configurações do banco:");
-            e.printStackTrace();
         }
+        return dataSource;
     }
 
-    public static Connection conectar() {
-        try {
-            String url = props.getProperty("db.url");
-            String usuario = props.getProperty("db.user");
-            String senha = props.getProperty("db.password");
-
-            return DriverManager.getConnection(url, usuario, senha);
-        } catch (SQLException e) {
-            System.err.println("Erro ao conectar no PostgreSQL. Verifique o db.properties.");
-            e.printStackTrace();
-            return null;
-        }
+    public static Connection conectar() throws SQLException {
+        return getDataSource().getConnection();
     }
 }
