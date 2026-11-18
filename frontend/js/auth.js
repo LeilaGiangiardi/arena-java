@@ -21,25 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let modoAtual = "login";
     let loadingInterval = null;
-    let slowServerTimeout = null;
-    let abortControllerAtual = null;
-    let bancoAquecido = false;
-
-    // Acorda tanto o Render quanto o banco Neon assim que a página abre
-    function aquecerServidorEBanco() {
-        if (bancoAquecido) return;
-        bancoAquecido = true;
-
-        fetch("https://arena-java-api.onrender.com/api/dashboard?email=warmup@arenajava.local", {
-            method: "GET",
-            mode: "cors",
-            cache: "no-store"
-        }).catch(() => {
-            bancoAquecido = false;
-        });
-    }
-
-    aquecerServidorEBanco();
 
     if (window.ArenaIHC) {
         ArenaIHC.bindCapsLockWarning(inputSenha, capsWarning);
@@ -47,7 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (btnOpen) {
         btnOpen.addEventListener("click", () => {
-            aquecerServidorEBanco();
             modal.classList.remove("hidden");
             setTimeout(() => {
                 if (modoAtual === "cadastrar" && inputNome) inputNome.focus();
@@ -87,17 +67,11 @@ document.addEventListener("DOMContentLoaded", () => {
     function iniciarAnimacaoBotao() {
         pararAnimacaoBotao();
         let passo = 1;
-        let textoBase = "Conectando ao Servidor";
         btnSubmit.disabled = true;
-
-        // Se o servidor estiver acordando de hibernação (> 6s), avisa o usuário para não achar que travou
-        slowServerTimeout = setTimeout(() => {
-            textoBase = "Acordando servidor (aguarde)";
-        }, 6000);
 
         const renderizarFrame = () => {
             const pontos = ".".repeat(passo);
-            btnSubmit.innerHTML = `<i class="ph-bold ph-circle-notch arena-spinner-icon"></i>${textoBase}<span class="arena-dots">${pontos}</span>`;
+            btnSubmit.innerHTML = `<i class="ph-bold ph-circle-notch arena-spinner-icon"></i>Conectando ao Servidor<span class="arena-dots">${pontos}</span>`;
             passo = (passo % 3) + 1;
         };
 
@@ -110,17 +84,12 @@ document.addEventListener("DOMContentLoaded", () => {
             clearInterval(loadingInterval);
             loadingInterval = null;
         }
-        if (slowServerTimeout) {
-            clearTimeout(slowServerTimeout);
-            slowServerTimeout = null;
-        }
         btnSubmit.disabled = false;
         btnSubmit.textContent = modoAtual === "login" ? "Executar Login" : "Cadastrar Calouro";
     }
 
     if (tabLogin && tabRegister) {
         tabLogin.addEventListener("click", () => {
-            if (abortControllerAtual) abortControllerAtual.abort();
             modoAtual = "login";
             pararAnimacaoBotao();
             tabLogin.classList.add("active");
@@ -132,7 +101,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         tabRegister.addEventListener("click", () => {
-            if (abortControllerAtual) abortControllerAtual.abort();
             modoAtual = "cadastrar";
             pararAnimacaoBotao();
             tabRegister.classList.add("active");
@@ -149,40 +117,24 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
             feedbackMsg.classList.add("hidden");
 
-            // Remove espaços invisíveis colocados por corretores de celular (Chrome/Safari)
-            const emailLimpo = (inputEmail.value || "").trim();
-            const senhaValor = inputSenha.value || "";
-            const nomeLimpo = inputNome ? inputNome.value.trim() : "";
-
-            if (modoAtual === "cadastrar" && !nomeLimpo) {
-                feedbackMsg.textContent = "Por favor, informe seu Nome ou Nickname.";
-                feedbackMsg.classList.remove("hidden");
-                return;
-            }
-
             const payload = {
                 acao: modoAtual,
-                email: emailLimpo,
-                senha: senhaValor,
-                nome: nomeLimpo
+                email: inputEmail.value.trim(),
+                senha: inputSenha.value,
+                nome: inputNome ? inputNome.value.trim() : ""
             };
-
-            if (abortControllerAtual) abortControllerAtual.abort();
-            abortControllerAtual = new AbortController();
 
             iniciarAnimacaoBotao();
 
             fetch("https://arena-java-api.onrender.com/api/auth", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-                signal: abortControllerAtual.signal
+                body: JSON.stringify(payload)
             })
             .then(res => res.json())
             .then(data => {
                 if (data.sucesso) {
                     if (loadingInterval) clearInterval(loadingInterval);
-                    if (slowServerTimeout) clearTimeout(slowServerTimeout);
                     btnSubmit.innerHTML = `<i class="ph-bold ph-check-circle" style="margin-right: 6px;"></i>Acesso Liberado!`;
 
                     sessionStorage.clear();
@@ -195,18 +147,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     window.location.href = "dashboard.html";
                 } else {
                     pararAnimacaoBotao();
-                    if (modoAtual === "login" && data.mensagem === "Credenciais inválidas.") {
-                        feedbackMsg.textContent = "E-mail ou senha incorretos. Se for seu primeiro acesso, clique na aba 'Criar Conta' acima!";
-                    } else {
-                        feedbackMsg.textContent = data.mensagem || "Erro na autenticação.";
-                    }
+                    feedbackMsg.textContent = data.mensagem || "Erro na autenticação.";
                     feedbackMsg.classList.remove("hidden");
                 }
             })
-            .catch((err) => {
-                if (err.name === "AbortError") return;
+            .catch(() => {
                 pararAnimacaoBotao();
-                feedbackMsg.textContent = "O servidor estava hibernando e levou mais tempo para responder. Clique novamente para entrar!";
+                feedbackMsg.textContent = "Falha de conexão com o servidor Tomcat.";
                 feedbackMsg.classList.remove("hidden");
             });
         });
