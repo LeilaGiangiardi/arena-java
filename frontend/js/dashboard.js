@@ -62,7 +62,7 @@ function aplicarDadosDashboard(data) {
 
     atualizarEstatisticaHeader(data.estatisticas);
 
-    const top4 = rankingGlobal.slice(0, 4);
+    const top4 = rankingGlobal.slice(0, 5);
     atualizarRanking(top4, nomeUsuarioAtual, "ranking-list");
 }
 
