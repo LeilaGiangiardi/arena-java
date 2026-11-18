@@ -150,7 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
             feedbackMsg.classList.add("hidden");
 
             // Remove espaços invisíveis colocados por corretores de celular (Chrome/Safari)
-            const emailLimpo = (inputEmail.value || "").replace(/\s+/g, "").toLowerCase();
+            const emailLimpo = (inputEmail.value || "").trim();
             const senhaValor = inputSenha.value || "";
             const nomeLimpo = inputNome ? inputNome.value.trim() : "";
 
